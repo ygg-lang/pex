@@ -2,8 +2,8 @@
 name = "pex"
 version = "0.0.0"
 authors = ["Aster <192607617@qq.com>"]
-description = "..."
-repository = "https://github.com/oovm/sub_projects"
+description = "A parser combinator library for Rust."
+repository = "https://github.com/oovm/pex"
 documentation = "https://docs.rs/sub_projects"
 readme = "Readme.md"
 license = "MPL-2.0"
