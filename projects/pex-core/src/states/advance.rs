@@ -12,16 +12,20 @@ impl From<usize> for ParseAdvance {
         ParseAdvance::Offset(v)
     }
 }
+
 impl From<char> for ParseAdvance {
     fn from(c: char) -> Self {
         ParseAdvance::Character(c)
     }
 }
+
 impl From<&'static str> for ParseAdvance {
     fn from(s: &'static str) -> Self {
         ParseAdvance::String(s)
     }
 }
+
+
 impl<'i> YState<'i> {
     /// Advance the parser to a new state.
     #[inline]

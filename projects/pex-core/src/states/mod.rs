@@ -1,12 +1,13 @@
 use std::{ops::Range, slice::SliceIndex};
 
+#[cfg(feature = "ucd-trie")]
 use ucd_trie::TrieSet;
 
 use crate::{results::StopBecause, SResult, SResult::Pending};
 
-mod advance;
+pub mod advance;
 mod builtin;
-mod choice;
+pub mod choice;
 mod concat;
 
 /// Represent a parsed value
@@ -39,10 +40,6 @@ impl<'i> YState<'i> {
     #[inline(always)]
     pub fn finish<T>(self, value: T) -> SResult<'i, T> {
         Pending(self, value)
-    }
-    /// Finish with given value
-    pub fn finish_drop(self) -> SResult<'i, ()> {
-        self.finish(())
     }
     /// Check if the string is depleted
     #[inline(always)]

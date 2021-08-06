@@ -4,7 +4,7 @@ use std::{
     fmt::{Display, Formatter},
     ops::{ControlFlow, FromResidual, Range, Try},
 };
-
+use crate::Parsed;
 use crate::YState;
 
 mod residual;
