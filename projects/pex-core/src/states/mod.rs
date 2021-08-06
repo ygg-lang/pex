@@ -9,6 +9,9 @@ mod builtin;
 mod choice;
 mod concat;
 
+/// Represent a parsed value
+pub type Parsed<'i, T> = (YState<'i>, T);
+
 /// The state of parsing
 #[derive(Copy, Clone, Debug)]
 pub struct YState<'i> {
