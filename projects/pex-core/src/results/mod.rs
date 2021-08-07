@@ -1,20 +1,18 @@
+use crate::{ParseState, Parsed};
 use std::{
     convert::Infallible,
     error::Error,
     fmt::{Display, Formatter},
     ops::{ControlFlow, FromResidual, Range, Try},
 };
-use crate::Parsed;
-use crate::ParseState;
 
 mod residual;
 
+mod methods;
 mod reason;
-mod s_result;
-
 
 /// Represent as parsing result
-pub enum SResult<'i, T> {
+pub enum ParseResult<'i, T> {
     /// The parsing is not finished yet
     Pending(ParseState<'i>, T),
     /// The parsing is finished, and give the reason why

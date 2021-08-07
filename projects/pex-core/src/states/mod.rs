@@ -1,9 +1,15 @@
 use std::{ops::Range, slice::SliceIndex};
 
+#[cfg(feature = "regex-automata")]
+use regex_automata::{dfa::regex::Regex, MultiMatch};
 #[cfg(feature = "ucd-trie")]
 use ucd_trie::TrieSet;
 
-use crate::{results::StopBecause, SResult, SResult::Pending};
+use crate::{
+    results::StopBecause,
+    ParseResult,
+    ParseResult::{Pending, Stop},
+};
 
 pub mod advance;
 mod builtin;
@@ -17,7 +23,7 @@ pub type Parsed<'i, T> = (ParseState<'i>, T);
 #[derive(Copy, Clone, Debug)]
 pub struct ParseState<'i> {
     /// Rest part of string
-    pub partial_string: &'i str,
+    pub rest_text: &'i str,
     /// Start offset of the string
     pub start_offset: usize,
     /// Stop reason
@@ -28,7 +34,7 @@ impl<'i> ParseState<'i> {
     /// Create a new state
     #[inline(always)]
     pub fn new(input: &'i str) -> Self {
-        Self { partial_string: input, start_offset: 0, stop_reason: None }
+        Self { rest_text: input, start_offset: 0, stop_reason: None }
     }
     /// Reset the cursor offset
     #[inline(always)]
@@ -38,13 +44,13 @@ impl<'i> ParseState<'i> {
     }
     /// Finish with given value
     #[inline(always)]
-    pub fn finish<T>(self, value: T) -> SResult<'i, T> {
+    pub fn finish<T>(self, value: T) -> ParseResult<'i, T> {
         Pending(self, value)
     }
     /// Check if the string is depleted
     #[inline(always)]
     pub fn is_empty(&self) -> bool {
-        self.partial_string.is_empty()
+        self.rest_text.is_empty()
     }
     /// Get inner error
     #[inline(always)]
@@ -65,12 +71,12 @@ impl<'i> ParseState<'i> {
     where
         R: SliceIndex<str>,
     {
-        self.partial_string.get(range)
+        self.rest_text.get(range)
     }
     /// Get nth character
     #[inline(always)]
     pub fn get_character(&self, nth: usize) -> Option<char> {
-        self.partial_string.chars().nth(nth)
+        self.rest_text.chars().nth(nth)
     }
     /// Get range away from start state
     #[inline(always)]

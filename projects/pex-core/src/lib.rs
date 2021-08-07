@@ -1,10 +1,10 @@
 #![feature(try_trait_v2)]
 
 pub use crate::{
-    results::{SResult, StopBecause},
-    states::{advance::ParseAdvance, choice::ChoiceHelper, Parsed, ParseState},
+    results::{ParseResult, StopBecause},
+    states::{advance::ParseAdvance, choice::ChoiceHelper, ParseState, Parsed},
 };
 
-mod errors;
 mod results;
 mod states;
+mod third_party;

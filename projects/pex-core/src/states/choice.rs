@@ -1,4 +1,4 @@
-use crate::{Parsed, SResult, SResult::Stop};
+use crate::{ParseResult, ParseResult::Stop, Parsed};
 
 use super::*;
 
@@ -25,7 +25,7 @@ impl<'a, T> ChoiceHelper<'a, T> {
 
     /// Try to parse a value
     #[inline]
-    pub fn maybe(mut self, parse_fn: impl FnOnce(ParseState<'a>) -> SResult<'a, T>) -> Self {
+    pub fn maybe(mut self, parse_fn: impl FnOnce(ParseState<'a>) -> ParseResult<'a, T>) -> Self {
         if self.result.is_none() {
             match parse_fn(self.state.clone()) {
                 Pending(s, v) => self.result = Some((s, v)),
@@ -36,7 +36,7 @@ impl<'a, T> ChoiceHelper<'a, T> {
     }
     /// End choice
     #[inline]
-    pub fn end_choice(self) -> SResult<'a, T> {
+    pub fn end_choice(self) -> ParseResult<'a, T> {
         match self.result {
             Some(ok) => Pending(ok.0, ok.1),
             None => Stop(self.state.get_error()),
