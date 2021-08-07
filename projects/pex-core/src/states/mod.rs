@@ -11,11 +11,11 @@ pub mod choice;
 mod concat;
 
 /// Represent a parsed value
-pub type Parsed<'i, T> = (YState<'i>, T);
+pub type Parsed<'i, T> = (ParseState<'i>, T);
 
 /// The state of parsing
 #[derive(Copy, Clone, Debug)]
-pub struct YState<'i> {
+pub struct ParseState<'i> {
     /// Rest part of string
     pub partial_string: &'i str,
     /// Start offset of the string
@@ -24,7 +24,7 @@ pub struct YState<'i> {
     pub stop_reason: Option<StopBecause>,
 }
 
-impl<'i> YState<'i> {
+impl<'i> ParseState<'i> {
     /// Create a new state
     #[inline(always)]
     pub fn new(input: &'i str) -> Self {
@@ -74,7 +74,7 @@ impl<'i> YState<'i> {
     }
     /// Get range away from start state
     #[inline(always)]
-    pub fn away_from(&self, start: YState) -> Range<usize> {
+    pub fn away_from(&self, start: ParseState) -> Range<usize> {
         start.start_offset..self.start_offset
     }
 }

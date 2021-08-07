@@ -1,9 +1,11 @@
+use regex_automata::{dfa::regex::Regex, MultiMatch};
+
 use crate::{SResult, SResult::Stop};
 
 use super::*;
 
 /// Character parsing methods.
-impl<'i> YState<'i> {
+impl<'i> ParseState<'i> {
     /// Match a single character.
     ///
     /// ```ygg
@@ -60,7 +62,7 @@ impl<'i> YState<'i> {
     }
 }
 
-impl<'i> YState<'i> {
+impl<'i> ParseState<'i> {
     /// Match a static string.
     #[inline]
     pub fn match_str_static(self, target: &'static str, insensitive: bool) -> SResult<'i, &'i str> {
@@ -71,6 +73,20 @@ impl<'i> YState<'i> {
         };
         self.advance_view(s)
     }
+    pub fn match_re(&self, re: &Regex, message: &'static str) -> SResult<'i, MultiMatch> {
+        match re.try_find_leftmost(self.partial_string.as_bytes()) {
+            Ok(Some(m)) => {
+                let new = self.advance(m.end());
+                Pending(new, m)
+            }
+            Ok(None) => StopBecause::must_be(message, self.start_offset)?,
+            Err(e) => {
+                println!("Error: {:?}", e);
+                unimplemented!()
+            }
+        }
+    }
+
     /// Match a string with given rule.
     #[inline]
     pub fn match_str_if(self, predicate: impl Fn(char) -> bool, message: &'static str) -> SResult<'i, &'i str> {
@@ -88,12 +104,12 @@ impl<'i> YState<'i> {
     }
 }
 
-impl<'i> YState<'i> {
+impl<'i> ParseState<'i> {
     /// Simple suffix call form
     #[inline]
     pub fn match_parse<T, F>(self, parse: F) -> SResult<'i, T>
-        where
-            F: Fn(YState) -> SResult<T>,
+    where
+        F: Fn(ParseState) -> SResult<T>,
     {
         parse(self)
     }
@@ -104,8 +120,8 @@ impl<'i> YState<'i> {
     /// ```
     #[inline]
     pub fn match_repeats<T, F>(self, parse: F) -> SResult<'i, Vec<T>>
-        where
-            F: Fn(YState) -> SResult<T>,
+    where
+        F: Fn(ParseState) -> SResult<T>,
     {
         let mut result = Vec::new();
         let mut state = self;
@@ -129,8 +145,8 @@ impl<'i> YState<'i> {
     /// ```
     #[inline]
     pub fn match_repeat_m_n<T, F>(self, min: usize, max: usize, parse: F) -> SResult<'i, Vec<T>>
-        where
-            F: Fn(YState) -> SResult<T>,
+    where
+        F: Fn(ParseState) -> SResult<T>,
     {
         let mut result = Vec::new();
         let mut count = 0;
@@ -160,8 +176,8 @@ impl<'i> YState<'i> {
     /// ```
     #[inline]
     pub fn match_optional<T, F>(self, parse: F) -> SResult<'i, Option<T>>
-        where
-            F: Fn(YState) -> SResult<T>,
+    where
+        F: Fn(ParseState) -> SResult<T>,
     {
         match parse(self.clone()) {
             Pending(state, value) => state.finish(Some(value)),
@@ -170,9 +186,9 @@ impl<'i> YState<'i> {
     }
     /// Match but does not return the result
     #[inline]
-    pub fn skip<F, T>(self, parse: F) -> YState<'i>
-        where
-            F: Fn(YState) -> SResult<T>,
+    pub fn skip<F, T>(self, parse: F) -> ParseState<'i>
+    where
+        F: Fn(ParseState) -> SResult<T>,
     {
         match parse(self.clone()) {
             Pending(new, _) => new,
@@ -189,8 +205,8 @@ impl<'i> YState<'i> {
     /// ```
     #[inline]
     pub fn match_positive<F, T>(self, parse: F, message: &'static str) -> SResult<'i, ()>
-        where
-            F: Fn(YState) -> SResult<T>,
+    where
+        F: Fn(ParseState) -> SResult<T>,
     {
         match parse(self.clone()) {
             Pending(..) => self.finish(()),
@@ -204,8 +220,8 @@ impl<'i> YState<'i> {
     /// ```
     #[inline]
     pub fn match_negative<F, T>(self, parse: F, message: &'static str) -> SResult<'i, ()>
-        where
-            F: Fn(YState) -> SResult<T>,
+    where
+        F: Fn(ParseState) -> SResult<T>,
     {
         match parse(self.clone()) {
             Pending(..) => Stop(StopBecause::ShouldNotBe { message, position: self.start_offset }),
@@ -214,7 +230,7 @@ impl<'i> YState<'i> {
     }
 }
 
-impl<'i> YState<'i> {
+impl<'i> ParseState<'i> {
     /// Parse a comment line
     /// ```regex
     /// # comment
@@ -238,8 +254,8 @@ impl<'i> YState<'i> {
     /// ```
     #[inline]
     pub fn match_comment_block<F, T>(self, head: &'static str, tail: &'static str) -> SResult<'i, ()>
-        where
-            F: Fn(YState) -> SResult<T>,
+    where
+        F: Fn(ParseState) -> SResult<T>,
     {
         if !self.partial_string.starts_with(head) {
             Stop::<()>(StopBecause::MissingString { message: head, position: self.start_offset })?;
@@ -260,8 +276,8 @@ impl<'i> YState<'i> {
     /// r###" "###
     /// ```
     pub fn match_surround<F, T>(self, delimiter: char, min: usize) -> SResult<'i, ()>
-        where
-            F: Fn(YState) -> SResult<T>,
+    where
+        F: Fn(ParseState) -> SResult<T>,
     {
         let mut count = 0;
         for c in self.partial_string.chars() {

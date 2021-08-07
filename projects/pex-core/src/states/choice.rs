@@ -4,11 +4,11 @@ use super::*;
 
 #[derive(Debug, Clone)]
 pub struct ChoiceHelper<'a, T> {
-    state: YState<'a>,
+    state: ParseState<'a>,
     result: Option<Parsed<'a, T>>,
 }
 
-impl<'i> YState<'i> {
+impl<'i> ParseState<'i> {
     /// Begin a choice
     #[inline]
     pub fn begin_choice<T>(self) -> ChoiceHelper<'i, T> {
@@ -19,13 +19,13 @@ impl<'i> YState<'i> {
 impl<'a, T> ChoiceHelper<'a, T> {
     /// Create a new choice helper
     #[inline]
-    pub fn new(state: YState<'a>) -> Self {
+    pub fn new(state: ParseState<'a>) -> Self {
         Self { state, result: None }
     }
 
     /// Try to parse a value
     #[inline]
-    pub fn maybe(mut self, parse_fn: impl FnOnce(YState<'a>) -> SResult<'a, T>) -> Self {
+    pub fn maybe(mut self, parse_fn: impl FnOnce(ParseState<'a>) -> SResult<'a, T>) -> Self {
         if self.result.is_none() {
             match parse_fn(self.state.clone()) {
                 Pending(s, v) => self.result = Some((s, v)),

@@ -5,7 +5,7 @@ use std::{
     ops::{ControlFlow, FromResidual, Range, Try},
 };
 use crate::Parsed;
-use crate::YState;
+use crate::ParseState;
 
 mod residual;
 
@@ -16,7 +16,7 @@ mod s_result;
 /// Represent as parsing result
 pub enum SResult<'i, T> {
     /// The parsing is not finished yet
-    Pending(YState<'i>, T),
+    Pending(ParseState<'i>, T),
     /// The parsing is finished, and give the reason why
     Stop(StopBecause),
 }

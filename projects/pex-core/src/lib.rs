@@ -2,7 +2,7 @@
 
 pub use crate::{
     results::{SResult, StopBecause},
-    states::{advance::ParseAdvance, choice::ChoiceHelper, Parsed, YState},
+    states::{advance::ParseAdvance, choice::ChoiceHelper, Parsed, ParseState},
 };
 
 mod errors;

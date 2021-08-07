@@ -26,10 +26,10 @@ impl From<&'static str> for ParseAdvance {
 }
 
 
-impl<'i> YState<'i> {
+impl<'i> ParseState<'i> {
     /// Advance the parser to a new state.
     #[inline]
-    pub fn advance<T>(self, term: T) -> YState<'i>
+    pub fn advance<T>(self, term: T) -> ParseState<'i>
     where
         T: Into<ParseAdvance>,
     {
@@ -38,7 +38,7 @@ impl<'i> YState<'i> {
             ParseAdvance::Character(v) => v.len_utf8(),
             ParseAdvance::String(v) => v.len(),
         };
-        YState {
+        ParseState {
             partial_string: &self.partial_string[offset..],
             start_offset: self.start_offset + offset,
             stop_reason: self.stop_reason,
@@ -48,7 +48,7 @@ impl<'i> YState<'i> {
     #[inline]
     pub fn advance_view(self, offset: usize) -> SResult<'i, &'i str> {
         let view = &self.partial_string[0..offset];
-        YState {
+        ParseState {
             partial_string: &self.partial_string[offset..],
             start_offset: self.start_offset + offset,
             stop_reason: self.stop_reason,
