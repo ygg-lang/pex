@@ -3,7 +3,7 @@ use std::{ops::Range, slice::SliceIndex};
 #[cfg(feature = "regex-automata")]
 use regex_automata::{dfa::regex::Regex, MultiMatch};
 #[cfg(feature = "ucd-trie")]
-use ucd_trie::TrieSet;
+use ucd_trie::TrieSetSlice;
 
 use crate::{
     results::StopBecause,

@@ -1,5 +1,5 @@
 use regex_automata::dfa::regex::Regex;
-use ucd_trie::TrieSet;
+use ucd_trie::TrieSetOwned;
 
 use pex::ParseState;
 
@@ -9,10 +9,10 @@ fn ready() {
 }
 
 pub fn test_trie() {
-    let trie = TrieSet::new(&["a", "b", "c"]);
+    let trie = TrieSetOwned::from_codepoints(vec![0x61, 0x62, 0x63]).unwrap();
     let text = "abc";
     let s = ParseState::new(text);
-    let s = s.match_char_set(&trie, "data");
+    let s = s.match_char_set(trie.as_slice(), "data");
     println!("{:#?}", s)
 }
 

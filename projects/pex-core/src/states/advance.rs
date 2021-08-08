@@ -1,5 +1,4 @@
 use super::*;
-use crate::ParseResult;
 
 pub enum ParseAdvance {
     Offset(usize),
