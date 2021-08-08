@@ -1,11 +1,11 @@
 [package]
 name = "pex"
-version = "0.0.0"
+version = "0.0.1"
 authors = ["Aster <192607617@qq.com>"]
 description = "A parser combinator library for Rust."
 repository = "https://github.com/oovm/pex"
 documentation = "https://docs.rs/pex"
-readme = "Readme.md"
+readme = "readme.md"
 license = "MPL-2.0"
 edition = "2021"
 

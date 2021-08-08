@@ -11,7 +11,7 @@ impl<'i> ParseState<'i> {
     pub fn match_char(self, target: char) -> ParseResult<'i, char> {
         match self.get_character(0) {
             Some(c) if c.eq(&target) => self.advance(target).finish(target),
-            _ => Stop(StopBecause::MissingCharacter { expected: target, position: self.start_offset }),
+            _ => StopBecause::missing_character(target, self.start_offset)?,
         }
     }
     /// Match a character in given range.
@@ -85,7 +85,7 @@ impl<'i> ParseState<'i> {
         }
     }
 
-    /// Match a string with given rule.
+    /// Match a string with given conditional.
     #[inline]
     pub fn match_str_if(self, predicate: impl Fn(char) -> bool, message: &'static str) -> ParseResult<'i, &'i str> {
         let mut offset = 0;

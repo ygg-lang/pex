@@ -1,4 +1,8 @@
 #![feature(try_trait_v2)]
+#![feature(try_blocks)]
+#![doc = include_str!("../readme.md")]
+#![doc(html_root_url = "https://docs.rs/pex-core/0.1.0")]
+#![warn(missing_docs)]
 
 pub use crate::{
     results::{ParseResult, StopBecause},

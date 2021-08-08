@@ -20,7 +20,7 @@ mod concat;
 pub type Parsed<'i, T> = (ParseState<'i>, T);
 
 /// The state of parsing
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug, Eq, PartialEq)]
 pub struct ParseState<'i> {
     /// Rest part of string
     pub rest_text: &'i str,

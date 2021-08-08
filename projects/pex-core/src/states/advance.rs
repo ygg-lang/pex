@@ -1,8 +1,12 @@
 use super::*;
 
+/// The advance of the parser.
 pub enum ParseAdvance {
+    /// Offset of the advance.
     Offset(usize),
+    /// Character of the advance.
     Character(char),
+    /// String of the advance.
     String(&'static str),
 }
 

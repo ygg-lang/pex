@@ -2,6 +2,7 @@ use crate::{ParseResult, ParseResult::Stop, Parsed};
 
 use super::*;
 
+/// Helper for choice pattern
 #[derive(Debug, Clone)]
 pub struct ChoiceHelper<'a, T> {
     state: ParseState<'a>,
@@ -22,7 +23,6 @@ impl<'a, T> ChoiceHelper<'a, T> {
     pub fn new(state: ParseState<'a>) -> Self {
         Self { state, result: None }
     }
-
     /// Try to parse a value
     #[inline]
     pub fn maybe(mut self, parse_fn: impl FnOnce(ParseState<'a>) -> ParseResult<'a, T>) -> Self {

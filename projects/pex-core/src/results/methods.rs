@@ -21,6 +21,22 @@ where
 }
 
 impl<'i, T> ParseResult<'i, T> {
+    /// Map inner value
+    ///
+    /// # Arguments
+    ///
+    /// * `f`:
+    ///
+    /// returns: ParseResult<U>
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// # use pex::{ParseResult, ParseState};
+    /// let state = ParseState::new("hello");
+    /// let result = state.finish(());
+    /// assert_eq!(result.map(|_| 1), ParseResult::Pending(state, 1));
+    /// ```
     #[inline(always)]
     pub fn map_inner<F, U>(self, f: F) -> ParseResult<'i, U>
     where
@@ -31,6 +47,16 @@ impl<'i, T> ParseResult<'i, T> {
             Self::Stop(reason) => ParseResult::Stop(reason),
         }
     }
+    /// Convert a parse [`Result`](Self) to a std [`Result`]
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// # use pex::{ParseResult, ParseState};
+    /// let state = ParseState::new("hello");
+    /// let result = state.finish(());
+    /// assert_eq!(result.as_result(), Ok((state, ())));
+    /// ```
     #[inline(always)]
     #[allow(clippy::wrong_self_convention)]
     pub fn as_result(self) -> Result<Parsed<'i, T>, StopBecause> {

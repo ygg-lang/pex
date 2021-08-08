@@ -29,21 +29,27 @@ impl Display for StopBecause {
 }
 
 impl StopBecause {
+    /// Create a new `StopBecause::MustBe` error
     pub fn must_be<T>(message: &'static str, position: usize) -> Result<T, StopBecause> {
         Err(Self::MustBe { message, position })
     }
+    /// Create a new `StopBecause::ExpectEof` error
     pub fn expect_eof<T>(position: usize) -> Result<T, StopBecause> {
         Err(Self::ExpectEof { position })
     }
+    /// Create a new `StopBecause::MissingCharacter` error
     pub fn missing_character<T>(expected: char, position: usize) -> Result<T, StopBecause> {
         Err(Self::MissingCharacter { expected, position })
     }
+    /// Create a new `StopBecause::MissingCharacterRange` error
     pub fn missing_character_range<T>(start: char, end: char, position: usize) -> Result<T, StopBecause> {
         Err(Self::MissingCharacterRange { start, end, position })
     }
+    /// Create a new `StopBecause::MissingString` error
     pub fn missing_string<T>(message: &'static str, position: usize) -> Result<T, StopBecause> {
         Err(Self::MissingString { message, position })
     }
+    /// Create a new `StopBecause::Custom` error
     pub fn range(&self) -> Range<usize> {
         match *self {
             StopBecause::Uninitialized => 0..0,
