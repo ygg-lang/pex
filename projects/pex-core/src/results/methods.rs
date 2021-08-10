@@ -35,7 +35,7 @@ impl<'i, T> ParseResult<'i, T> {
     /// # use pex::{ParseResult, ParseState};
     /// let state = ParseState::new("hello");
     /// let result = state.finish(());
-    /// assert_eq!(result.map(|_| 1), ParseResult::Pending(state, 1));
+    /// assert_eq!(result.map_inner(|_|1), ParseResult::Pending(state, 1));
     /// ```
     #[inline(always)]
     pub fn map_inner<F, U>(self, f: F) -> ParseResult<'i, U>
