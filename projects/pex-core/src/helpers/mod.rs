@@ -1,5 +1,10 @@
 #![doc = include_str!("readme.md")]
+
 use crate::{ParseResult, ParseState, StopBecause};
+use std::str::FromStr;
+mod number;
+
+pub use self::number::*;
 
 /// Match ascii whitespace and newlines, never fails
 ///
