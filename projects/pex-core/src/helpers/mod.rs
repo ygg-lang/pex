@@ -2,9 +2,10 @@
 
 use crate::{ParseResult, ParseState, StopBecause};
 use std::str::FromStr;
+mod color;
 mod number;
 
-pub use self::number::*;
+pub use self::{color::rgba, number::*};
 
 /// Match ascii whitespace and newlines, never fails
 ///

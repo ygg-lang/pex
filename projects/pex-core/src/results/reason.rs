@@ -49,6 +49,9 @@ impl StopBecause {
     pub fn missing_string<T>(message: &'static str, position: usize) -> Result<T, StopBecause> {
         Err(Self::MissingString { message, position })
     }
+    pub fn custom_error<T>(message: &'static str, position: usize) -> Result<T, StopBecause> {
+        Err(Self::Custom { message, position })
+    }
     /// Create a new `StopBecause::Custom` error
     pub fn range(&self) -> Range<usize> {
         match *self {
