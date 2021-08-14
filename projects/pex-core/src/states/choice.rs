@@ -10,7 +10,7 @@ pub struct ChoiceHelper<'a, T> {
 }
 
 impl<'i> ParseState<'i> {
-    /// Begin a choice
+    /// Begin a choice progress
     #[inline]
     pub fn begin_choice<T>(self) -> ChoiceHelper<'i, T> {
         ChoiceHelper { state: self, result: None }
@@ -25,7 +25,10 @@ impl<'a, T> ChoiceHelper<'a, T> {
     }
     /// Try to parse a value
     #[inline]
-    pub fn maybe(mut self, parse_fn: impl FnOnce(ParseState<'a>) -> ParseResult<'a, T>) -> Self {
+    pub fn or_else<F>(mut self, mut parse_fn: F) -> Self
+    where
+        F: FnMut(ParseState<'a>) -> ParseResult<'a, T>,
+    {
         if self.result.is_none() {
             match parse_fn(self.state.clone()) {
                 Pending(s, v) => self.result = Some((s, v)),

@@ -14,7 +14,7 @@ use crate::{ParseResult, ParseState, StopBecause};
 /// | `#ABCDEFGH` | (AB, CD, EF, GH)  |
 /// | `>8`        | Error             |
 pub fn rgba<'a>(state: ParseState<'a>, start: &'static str) -> ParseResult<'a, (u8, u8, u8, u8)> {
-    let (state, _) = state.match_str_static(start, true)?;
+    let (state, _) = state.match_str(start, true)?;
     let mut buffer = Vec::with_capacity(8);
     for c in state.rest_text.chars() {
         match c {
