@@ -1,5 +1,28 @@
 use super::*;
 
+pub fn dec_str<'i>(input: ParseState<'i>) -> ParseResult<&'i str> {
+    let mut offset = 0;
+    let mut first_dot = true;
+    for char in input.rest_text.chars() {
+        match char {
+            '.' if first_dot => {
+                first_dot = false;
+                offset += 1;
+            }
+            '0'..='9' => {
+                offset += 1;
+            }
+            _ => {
+                break;
+            }
+        }
+    }
+    if offset == 0 {
+        StopBecause::missing_string("DECIMAL_LITERAL", input.start_offset)?;
+    }
+    input.advance_view(offset)
+}
+
 pub fn dec_u128(state: ParseState) -> ParseResult<u128> {
     let (state, txt) = match_dec(state)?;
     match u128::from_str(txt) {
