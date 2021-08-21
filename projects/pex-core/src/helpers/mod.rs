@@ -5,7 +5,7 @@ use std::str::FromStr;
 mod color;
 mod number;
 
-pub use self::{color::rgba, number::*};
+pub use self::{color::hex_color, number::*};
 
 /// Match ascii whitespace and newlines, never fails
 ///

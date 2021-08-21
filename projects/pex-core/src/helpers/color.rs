@@ -13,80 +13,67 @@ use crate::{ParseResult, ParseState, StopBecause};
 /// | `=7`        | Error             |
 /// | `#ABCDEFGH` | (AB, CD, EF, GH)  |
 /// | `>8`        | Error             |
-pub fn rgba<'a>(state: ParseState<'a>, start: &'static str) -> ParseResult<'a, (u8, u8, u8, u8)> {
-    let (state, _) = state.match_str(start, true)?;
-    let mut buffer = Vec::with_capacity(8);
-    for c in state.rest_text.chars() {
-        match c {
-            '0'..='9' | 'a'..='f' | 'A'..='F' => {
-                buffer.push(c);
-            }
-            _ if buffer.len() > 8 => {
-                StopBecause::custom_error("Color too long, except 1,2,3,4,6,8", state.start_offset + buffer.len())?;
-            }
-            _ => break,
-        }
-    }
-    let color = match buffer.as_slice() {
+pub fn hex_color<'a>(input: ParseState<'a>, start: &'static str) -> ParseResult<'a, (u8, u8, u8, u8)> {
+    let state = if start.is_empty() { input } else { input.match_str(start, true)?.0 };
+    let (state, hex) = state.match_str_if(|c| c.is_ascii_hexdigit(), "ASCII_HEX")?;
+    // SAFETY: `hex` is guaranteed to be ASCII hex digits
+    let color = match hex.as_bytes() {
         // gray
-        [g] => {
-            let c = build_u8(g);
+        [gray] => {
+            let c = byte2_to_u8(gray, gray);
             (c, c, c, 255)
         }
         // gray
-        [g1, g2] => {
-            let c = build_u8x2(g1, g2);
+        [gray1, gray2] => {
+            let c = byte2_to_u8(gray1, gray2);
             (c, c, c, 255)
         }
         // rgb
         [r, g, b] => {
-            let r = build_u8(r);
-            let g = build_u8(g);
-            let b = build_u8(b);
+            let r = byte2_to_u8(r, r);
+            let g = byte2_to_u8(g, g);
+            let b = byte2_to_u8(b, b);
             (r, g, b, 255)
         }
         // rgba
         [r, g, b, a] => {
-            let r = build_u8(r);
-            let g = build_u8(g);
-            let b = build_u8(b);
-            let a = build_u8(a);
+            let r = byte2_to_u8(r, r);
+            let g = byte2_to_u8(g, g);
+            let b = byte2_to_u8(b, b);
+            let a = byte2_to_u8(a, a);
             (r, g, b, a)
         }
         // rgb
         [r1, r2, g1, g2, b1, b2] => {
-            let r = build_u8x2(r1, r2);
-            let g = build_u8x2(g1, g2);
-            let b = build_u8x2(b1, b2);
+            let r = byte2_to_u8(r1, r2);
+            let g = byte2_to_u8(g1, g2);
+            let b = byte2_to_u8(b1, b2);
             (r, g, b, 255)
         }
         // rgba
         [r1, r2, g1, g2, b1, b2, a1, a2] => {
-            let r = build_u8x2(r1, r2);
-            let g = build_u8x2(g1, g2);
-            let b = build_u8x2(b1, b2);
-            let a = build_u8x2(a1, a2);
+            let r = byte2_to_u8(r1, r2);
+            let g = byte2_to_u8(g1, g2);
+            let b = byte2_to_u8(b1, b2);
+            let a = byte2_to_u8(a1, a2);
             (r, g, b, a)
         }
-        _ => StopBecause::custom_error("Color format wrong, except 1,2,3,4,6,8", state.start_offset + buffer.len())?,
+        buffer => StopBecause::custom_error("Color format wrong, except 1,2,3,4,6,8", state.start_offset + buffer.len())?,
     };
-    state.advance(buffer.len()).finish(color)
+    state.advance(hex.len()).finish(color)
 }
 
 #[inline(always)]
-fn build_u8(c: &char) -> u8 {
-    let n = *c as u8;
-    match n {
-        b'0'..=b'9' => n - b'0',
-        b'a'..=b'f' => n - b'a' + 10,
-        b'A'..=b'F' => n - b'A' + 10,
+fn byte2_to_u8(high: &u8, low: &u8) -> u8 {
+    byte_to_u8(*high) << 4 | byte_to_u8(*low)
+}
+
+#[inline(always)]
+fn byte_to_u8(byte: u8) -> u8 {
+    match byte {
+        b'0'..=b'9' => byte - b'0',
+        b'a'..=b'f' => byte - b'a' + 10,
+        b'A'..=b'F' => byte - b'A' + 10,
         _ => unreachable!(),
     }
-}
-
-#[inline(always)]
-fn build_u8x2(c1: &char, c2: &char) -> u8 {
-    let c1 = build_u8(c1);
-    let c2 = build_u8(c2);
-    c1 * 16 + c2
 }
