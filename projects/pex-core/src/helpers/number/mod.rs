@@ -23,6 +23,14 @@ pub fn dec_str<'i>(input: ParseState<'i>) -> ParseResult<&'i str> {
     input.advance_view(offset)
 }
 
+pub fn dec_f64(state: ParseState) -> ParseResult<f64> {
+    let (state, txt) = dec_str(state)?;
+    match f64::from_str(txt) {
+        Ok(o) => state.finish(o),
+        Err(_) => StopBecause::missing_string("decimal f64", state.start_offset)?,
+    }
+}
+
 pub fn dec_u128(state: ParseState) -> ParseResult<u128> {
     let (state, txt) = match_dec(state)?;
     match u128::from_str(txt) {

@@ -1,5 +1,5 @@
 [package]
-name = "pex"
+name = "pex-trie"
 version = "0.0.8"
 authors = ["Aster <192607617@qq.com>"]
 description = "A parser combinator library for Rust."
@@ -10,8 +10,7 @@ license = "MPL-2.0"
 edition = "2021"
 
 [dependencies]
-ucd-trie = { version = "0.1.5", optional = true }
-regex-automata = { version = "0.2.0", optional = true }
+ucd-trie = "0.1.5"
 
 [dev-dependencies]
 
