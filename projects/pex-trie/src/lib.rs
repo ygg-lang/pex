@@ -3,4 +3,6 @@
 #![warn(missing_docs)]
 
 pub mod generate;
-pub mod scripts;
+mod scripts;
+
+pub use scripts::UnicodeSet;

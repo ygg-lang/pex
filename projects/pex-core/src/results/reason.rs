@@ -23,10 +23,24 @@ impl Display for StopBecause {
             StopBecause::MissingString { message, .. } => f.write_fmt(format_args!("Missing string '{}'", message)),
             StopBecause::MustBe { message, .. } => f.write_fmt(format_args!("Must be `{}`", message)),
             StopBecause::ShouldNotBe { message, .. } => f.write_fmt(format_args!("Should not be `{}`", message)),
-            StopBecause::Custom { message, .. } => f.write_str(message),
+            StopBecause::Custom(..) => todo!(),
         }
     }
 }
+
+impl Debug for CustomError {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        todo!()
+    }
+}
+
+impl Display for CustomError {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        todo!()
+    }
+}
+
+impl Error for CustomError {}
 
 impl StopBecause {
     /// Create a new `StopBecause::MustBe` error
@@ -50,7 +64,7 @@ impl StopBecause {
         Err(Self::MissingString { message, position })
     }
     pub fn custom_error<T>(message: &'static str, position: usize) -> Result<T, StopBecause> {
-        Err(Self::Custom { message, position })
+        todo!()
     }
     /// Create a new `StopBecause::Custom` error
     pub fn range(&self) -> Range<usize> {
@@ -63,7 +77,7 @@ impl StopBecause {
             StopBecause::MissingString { message, position } => position..position + message.len(),
             StopBecause::MustBe { message: _, position } => position..position + 1,
             StopBecause::ShouldNotBe { message: _, position } => position..position + 1,
-            StopBecause::Custom { message: _, position } => position..position + 1,
+            StopBecause::Custom(..) => todo!(),
         }
     }
 }

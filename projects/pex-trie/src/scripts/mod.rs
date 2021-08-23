@@ -1,52 +1,90 @@
-use crate::generate::xid::XID_START;
 use std::{
     collections::BTreeSet,
-    fmt::{Debug, Formatter},
+    fmt::{Debug, Display, Formatter},
 };
-use ucd_trie::{Error, TrieSetOwned, TrieSetSlice};
+use ucd_trie::{Error, TrieSetOwned};
 
 pub struct UnicodeSet {
     name: String,
-    count: usize,
     max_width: usize,
-    trie: TrieSetOwned,
+    set: BTreeSet<char>,
 }
 
 impl Debug for UnicodeSet {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("UnicodeSet").field("name", &self.name).field("count", &self.count).finish()
+        f.debug_struct("UnicodeSet").field("name", &self.name).field("count", &self.set.len()).finish()
     }
 }
 
 impl UnicodeSet {
-    pub fn from_ranges(ranges: &[(char, char)]) -> Result<Self, Error> {
-        let mut set = BTreeSet::new();
-        for (start, end) in ranges {
-            for i in *start..=*end {
-                set.insert(i);
+    pub fn new(set: &str) -> Self {
+        let mut name = String::with_capacity(set.len());
+        for c in set.chars() {
+            if c.is_ascii_alphanumeric() {
+                // upper
+                name.push(c.to_ascii_uppercase());
+            }
+            else {
+                name.push('_');
             }
         }
-        let count = set.len();
-        let owned = TrieSetOwned::from_scalars(set)?;
-        Ok(Self { name: "UNICODE_SET".to_string(), max_width: 144, count, trie: owned })
-    }
-    pub fn export_rust_code(&self) -> String {
-        let mut code = String::new();
-        code.push_str("pub static UNICODE_SET: TrieSetSlice<'static> = TrieSetSlice {\n");
-        code
-    }
-}
 
-pub const UNICODE_SET: TrieSetSlice<'static> = TrieSetSlice {
-    tree1_level1: &[],
-    tree2_level1: &[],
-    tree2_level2: &[],
-    tree3_level1: &[],
-    tree3_level2: &[],
-    tree3_level3: &[],
-};
-
-#[test]
-fn test() {
-    println!("{:?}", UnicodeSet::from_ranges(XID_START));
+        Self { name, max_width: 144, set: BTreeSet::new() }
+    }
+    pub fn with_ranges(mut self, ranges: &[(char, char)]) -> Self {
+        for (start, end) in ranges {
+            for i in *start..=*end {
+                self.set.insert(i);
+            }
+        }
+        self
+    }
+    pub fn with_chars<I>(mut self, chars: I) -> Self
+    where
+        I: IntoIterator<Item = char>,
+    {
+        for c in chars {
+            self.set.insert(c);
+        }
+        self
+    }
+    pub fn with_max_width(mut self, max_width: usize) -> Self {
+        assert!(max_width >= 42, "max_width must be at least 42");
+        self.max_width = max_width;
+        self
+    }
+    pub fn export_rust_code(&self) -> Result<String, Error> {
+        let name = self.name.as_str();
+        let mut code = format!("#[rustfmt::skip]\nconst {name}: TrieSetSlice<'static> = TrieSetSlice");
+        code.push_str(" {\n");
+        let trie = TrieSetOwned::from_scalars(self.set.iter())?;
+        let trie = trie.as_slice();
+        self.write_slice_numbers(&mut code, trie.tree1_level1, "tree1_level1");
+        self.write_slice_numbers(&mut code, trie.tree2_level1, "tree2_level1");
+        self.write_slice_numbers(&mut code, trie.tree2_level2, "tree2_level2");
+        self.write_slice_numbers(&mut code, trie.tree3_level1, "tree3_level1");
+        self.write_slice_numbers(&mut code, trie.tree3_level2, "tree3_level2");
+        self.write_slice_numbers(&mut code, trie.tree3_level3, "tree3_level3");
+        code.push_str("};\n");
+        Ok(code)
+    }
+    fn write_slice_numbers<T: Display>(&self, buffer: &mut String, slice: &[T], field: &str) {
+        if slice.is_empty() {
+            buffer.push_str(&format!("    {field}: &[],\n"));
+        }
+        else {
+            buffer.push_str(&format!("    {field}: &["));
+            let mut line_width = usize::MAX;
+            for byte in slice {
+                if line_width > self.max_width {
+                    buffer.push_str("\n        ");
+                    line_width = 8;
+                }
+                let char_str = format!("{}, ", byte);
+                buffer.push_str(&char_str);
+                line_width += char_str.len();
+            }
+            buffer.push_str("\n    ],\n");
+        }
+    }
 }

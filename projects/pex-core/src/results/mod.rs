@@ -1,7 +1,7 @@
 use std::{
     convert::Infallible,
     error::Error,
-    fmt::{Display, Formatter},
+    fmt::{Debug, Display, Formatter},
     ops::{ControlFlow, FromResidual, Range, Try},
 };
 
@@ -77,10 +77,22 @@ pub enum StopBecause {
         position: usize,
     },
     /// Custom error
-    Custom {
-        /// The error message
-        message: &'static str,
-        /// The offset of the location where the error occurred
-        position: usize,
-    },
+    Custom(CustomError),
+}
+
+/// Custom error
+#[derive(Copy, Clone, Eq, PartialEq, Hash)]
+pub struct CustomError {
+    /// The error message
+    pub message: &'static str,
+    /// The offset of the location where the error occurred
+    pub start: usize,
+    /// The offset of the location where the error occurred
+    pub end: usize,
+}
+
+impl From<CustomError> for StopBecause {
+    fn from(value: CustomError) -> Self {
+        Self::Custom(value)
+    }
 }
