@@ -50,7 +50,13 @@ pub fn whitespace(state: ParseState) -> ParseResult<Box<str>> {
 ///
 /// ```no_run
 /// # use std::str::FromStr;
-/// # use pex::{helpers::{make_from_str, whitespace}, ParseState, StopBecause};
+/// # use pex::{helpers::{make_from_str, whitespace}, ParseResult, ParseState, StopBecause};
+/// # struct Compound;
+/// # impl Compound {
+/// #     fn parse(state: ParseState) -> ParseResult<Self> {
+/// #         state.finish(Compound)
+/// #     }
+/// # }
 /// impl FromStr for Compound {
 ///     type Err = StopBecause;
 ///

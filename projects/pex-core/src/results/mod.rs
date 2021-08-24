@@ -13,6 +13,7 @@ mod methods;
 mod reason;
 
 /// Represent as parsing result
+#[derive(Eq, PartialEq)]
 pub enum ParseResult<'i, T> {
     /// The parsing is not finished yet
     Pending(ParseState<'i>, T),

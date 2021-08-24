@@ -1,4 +1,4 @@
-#![no_std]
+//! https://github.com/HindrikStegenga/const-fnv1a-hash/blob/main/src/lib.rs
 
 const FNV_OFFSET_BASIS_32: u32 = 0x811c9dc5;
 const FNV_OFFSET_BASIS_64: u64 = 0xcbf29ce484222325;
@@ -11,11 +11,11 @@ const FNV_PRIME_128: u128 = 0x0000000001000000000000000000013B;
 macro_rules! fnv_hash_impl {
     ($typ:ty, $size:literal, $fn_name:ident, $str_fn_name:ident, $offset:expr, $prime:expr) => {
         #[doc = concat![
-                            "Computes ",
-                            stringify!($size),
-                            "-bits fnv1a hash of the given slice, or up-to limit if provided. ",
-                            "If limit is zero or exceeds slice length, slice length is used instead.",
-                        ]]
+                                    "Computes ",
+                                    stringify!($size),
+                                    "-bits fnv1a hash of the given slice, or up-to limit if provided. ",
+                                    "If limit is zero or exceeds slice length, slice length is used instead.",
+                                ]]
         pub const fn $fn_name(bytes: &[u8], limit: Option<usize>) -> $typ {
             let prime = $prime;
 
@@ -35,10 +35,10 @@ macro_rules! fnv_hash_impl {
         }
 
         #[doc = concat![
-                            "Computes ",
-                            stringify!($size),
-                            "-bit fnv1a hash from a str."
-                        ]]
+                                    "Computes ",
+                                    stringify!($size),
+                                    "-bit fnv1a hash from a str."
+                                ]]
         #[inline(always)]
         pub const fn $str_fn_name(input: &str) -> $typ {
             $fn_name(input.as_bytes(), None)

@@ -23,19 +23,11 @@ where
 impl<'i, T> ParseResult<'i, T> {
     /// Map inner value
     ///
-    /// # Arguments
-    ///
-    /// * `f`:
-    ///
-    /// returns: ParseResult<U>
-    ///
-    /// # Examples
-    ///
     /// ```
     /// # use pex::{ParseResult, ParseState};
     /// let state = ParseState::new("hello");
     /// let result = state.finish(());
-    /// assert_eq!(result.map_inner(|_|1), ParseResult::Pending(state, 1));
+    /// assert_eq!(result.map_inner(|_| 1), ParseResult::Pending(state, 1));
     /// ```
     #[inline(always)]
     pub fn map_inner<F, U>(self, f: F) -> ParseResult<'i, U>
@@ -46,6 +38,28 @@ impl<'i, T> ParseResult<'i, T> {
             Self::Pending(state, value) => ParseResult::Pending(state, f(value)),
             Self::Stop(reason) => ParseResult::Stop(reason),
         }
+    }
+    /// Dispatch branch events based on the result
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// # use pex::{ParseResult, ParseState};
+    /// let state = ParseState::new("hello");
+    /// let result = state.finish(());
+    /// result.dispatch(|ok| println!("ok: {:?}", ok), |fail| println!("fail: {:?}", fail));
+    /// ```
+    #[inline(always)]
+    pub fn dispatch<F, G>(self, ok: F, fail: G) -> Self
+    where
+        F: FnOnce(ParseState),
+        G: FnOnce(StopBecause),
+    {
+        match &self {
+            ParseResult::Pending(data, _) => ok(*data),
+            ParseResult::Stop(stop) => fail(*stop),
+        }
+        self
     }
     /// Convert a parse [`Result`](Self) to a std [`Result`]
     ///
