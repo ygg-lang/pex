@@ -14,7 +14,7 @@ use crate::{ParseResult, ParseState, StopBecause};
 /// | `#ABCDEFGH` | (AB, CD, EF, GH)  |
 /// | `>8`        | Error             |
 pub fn hex_color<'a>(input: ParseState<'a>, start: &'static str) -> ParseResult<'a, (u8, u8, u8, u8)> {
-    let state = if start.is_empty() { input } else { input.match_str(start, true)?.0 };
+    let state = if start.is_empty() { input } else { input.match_str(start)?.0 };
     let (state, hex) = state.match_str_if(|c| c.is_ascii_hexdigit(), "ASCII_HEX")?;
     // SAFETY: `hex` is guaranteed to be ASCII hex digits
     let color = match hex.as_bytes() {
@@ -58,7 +58,11 @@ pub fn hex_color<'a>(input: ParseState<'a>, start: &'static str) -> ParseResult<
             let a = byte2_to_u8(a1, a2);
             (r, g, b, a)
         }
-        buffer => StopBecause::custom_error("Color format wrong, except 1,2,3,4,6,8", state.start_offset + buffer.len())?,
+        buffer => StopBecause::custom_error(
+            "Color format wrong, except 1,2,3,4,6,8",
+            state.start_offset + buffer.len(),
+            state.start_offset + buffer.len() + 1,
+        )?,
     };
     state.advance(hex.len()).finish(color)
 }

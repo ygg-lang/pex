@@ -1,4 +1,4 @@
-use std::{ops::Range, slice::SliceIndex};
+use std::{fmt::Debug, ops::Range, slice::SliceIndex};
 
 #[cfg(feature = "regex-automata")]
 use regex_automata::{dfa::regex::Regex, MultiMatch};
@@ -33,28 +33,28 @@ pub struct ParseState<'i> {
 impl<'i> ParseState<'i> {
     /// Create a new state
     #[inline(always)]
-    pub fn new(input: &'i str) -> Self {
+    pub const fn new(input: &'i str) -> Self {
         Self { rest_text: input, start_offset: 0, stop_reason: None }
     }
     /// Reset the cursor offset
     #[inline(always)]
-    pub fn with_start_offset(mut self, offset: usize) -> Self {
+    pub const fn with_start_offset(mut self, offset: usize) -> Self {
         self.start_offset = offset;
         self
     }
     /// Finish with given value
     #[inline(always)]
-    pub fn finish<T>(self, value: T) -> ParseResult<'i, T> {
+    pub const fn finish<T>(self, value: T) -> ParseResult<'i, T> {
         Pending(self, value)
     }
     /// Check if the string is depleted
     #[inline(always)]
-    pub fn is_empty(&self) -> bool {
+    pub const fn is_empty(&self) -> bool {
         self.rest_text.is_empty()
     }
     /// Get inner error
     #[inline(always)]
-    pub fn get_error(self) -> StopBecause {
+    pub const fn get_error(self) -> StopBecause {
         match self.stop_reason {
             Some(s) => s,
             None => StopBecause::Uninitialized,
@@ -62,7 +62,7 @@ impl<'i> ParseState<'i> {
     }
     /// Set inner error
     #[inline(always)]
-    pub fn set_error(&mut self, error: StopBecause) {
+    pub const fn set_error(&mut self, error: StopBecause) {
         self.stop_reason = Some(error);
     }
     /// Get a string view
@@ -80,7 +80,7 @@ impl<'i> ParseState<'i> {
     }
     /// Get range away from start state
     #[inline(always)]
-    pub fn away_from(&self, start: ParseState) -> Range<usize> {
+    pub const fn away_from(&self, start: ParseState) -> Range<usize> {
         start.start_offset..self.start_offset
     }
 }

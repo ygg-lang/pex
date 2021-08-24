@@ -64,10 +64,18 @@ impl<'i> ParseState<'i> {
 impl<'i> ParseState<'i> {
     /// Match a static string.
     #[inline]
-    pub fn match_str(self, target: &'static str, insensitive: bool) -> ParseResult<'i, &'i str> {
+    pub fn match_str(self, target: &'static str) -> ParseResult<'i, &'i str> {
         let s = match self.get_string(0..target.len()) {
-            Some(s) if insensitive && s.eq_ignore_ascii_case(target) => s.len(),
             Some(s) if s.eq(target) => s.len(),
+            _ => StopBecause::missing_string(target, self.start_offset)?,
+        };
+        self.advance_view(s)
+    }
+    /// Match a static string.
+    #[inline]
+    pub fn match_str_insensitive(self, target: &'static str) -> ParseResult<'i, &'i str> {
+        let s = match self.get_string(0..target.len()) {
+            Some(s) if s.eq_ignore_ascii_case(target) => s.len(),
             _ => StopBecause::missing_string(target, self.start_offset)?,
         };
         self.advance_view(s)

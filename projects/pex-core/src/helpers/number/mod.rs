@@ -1,5 +1,6 @@
 use super::*;
 
+/// Match decimal string for later use
 pub fn dec_str<'i>(input: ParseState<'i>) -> ParseResult<&'i str> {
     let mut offset = 0;
     let mut first_dot = true;
@@ -23,6 +24,7 @@ pub fn dec_str<'i>(input: ParseState<'i>) -> ParseResult<&'i str> {
     input.advance_view(offset)
 }
 
+/// Match and parse a decimal string into a [f64]
 pub fn dec_f64(state: ParseState) -> ParseResult<f64> {
     let (state, txt) = dec_str(state)?;
     match f64::from_str(txt) {
@@ -31,6 +33,7 @@ pub fn dec_f64(state: ParseState) -> ParseResult<f64> {
     }
 }
 
+/// Match and parse a decimal integer into a [i64]
 pub fn dec_u128(state: ParseState) -> ParseResult<u128> {
     let (state, txt) = match_dec(state)?;
     match u128::from_str(txt) {
@@ -38,7 +41,7 @@ pub fn dec_u128(state: ParseState) -> ParseResult<u128> {
         Err(_) => StopBecause::missing_string("decimal u128", state.start_offset)?,
     }
 }
-
+/// Match and parse a decimal integer into a [usize]
 pub fn dec_usize(state: ParseState) -> ParseResult<usize> {
     let (state, txt) = match_dec(state)?;
     match usize::from_str(txt) {

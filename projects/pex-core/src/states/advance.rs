@@ -1,6 +1,7 @@
 use super::*;
 
 /// The advance of the parser.
+#[derive(Copy, Clone, Debug)]
 pub enum ParseAdvance {
     /// Offset of the advance.
     Offset(usize),
