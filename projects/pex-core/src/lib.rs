@@ -1,5 +1,5 @@
-#![feature(const_mut_refs)]
 #![feature(try_trait_v2, try_blocks)]
+#![feature(const_mut_refs, const_for, const_try)]
 #![deny(missing_debug_implementations, missing_copy_implementations)]
 #![warn(missing_docs, rustdoc::missing_crate_level_docs)]
 #![doc = include_str!("../readme.md")]

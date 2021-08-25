@@ -40,19 +40,19 @@ pub enum StopBecause {
         /// The offset of the location where the error occurred
         position: usize,
     },
-    /// Expect some character
-    MissingCharacter {
-        /// The expected character
-        expected: char,
-        /// The offset of the location where the error occurred
-        position: usize,
-    },
-    /// Expect some character in range
+    /// Expect some character or character range in range
     MissingCharacterRange {
         /// The start of the range
         start: char,
         /// The end of the range
         end: char,
+        /// The offset of the location where the error occurred
+        position: usize,
+    },
+    /// Expect some character
+    MissingCharacterSet {
+        /// The expected character
+        expected: &'static str,
         /// The offset of the location where the error occurred
         position: usize,
     },
@@ -77,18 +77,18 @@ pub enum StopBecause {
         /// The offset of the location where the error occurred
         position: usize,
     },
-    /// Custom error
+    /// A custom error message
     Custom(CustomError),
 }
 
-/// Custom error
+/// A custom error message
 #[derive(Copy, Clone, Eq, PartialEq, Hash)]
 pub struct CustomError {
     /// The error message
     pub message: &'static str,
-    /// The offset of the location where the error occurred
+    /// The start offset of the location where the error occurred
     pub start: usize,
-    /// The offset of the location where the error occurred
+    /// The end offset of the location where the error occurred
     pub end: usize,
 }
 

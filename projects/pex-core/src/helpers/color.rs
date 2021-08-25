@@ -68,12 +68,12 @@ pub fn hex_color<'a>(input: ParseState<'a>, start: &'static str) -> ParseResult<
 }
 
 #[inline(always)]
-fn byte2_to_u8(high: &u8, low: &u8) -> u8 {
+const fn byte2_to_u8(high: &u8, low: &u8) -> u8 {
     byte_to_u8(*high) << 4 | byte_to_u8(*low)
 }
 
 #[inline(always)]
-fn byte_to_u8(byte: u8) -> u8 {
+const fn byte_to_u8(byte: u8) -> u8 {
     match byte {
         b'0'..=b'9' => byte - b'0',
         b'a'..=b'f' => byte - b'a' + 10,

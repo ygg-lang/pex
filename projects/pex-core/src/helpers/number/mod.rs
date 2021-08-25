@@ -10,12 +10,8 @@ pub fn dec_str<'i>(input: ParseState<'i>) -> ParseResult<&'i str> {
                 first_dot = false;
                 offset += 1;
             }
-            '0'..='9' => {
-                offset += 1;
-            }
-            _ => {
-                break;
-            }
+            '0'..='9' => offset += 1,
+            _ => break,
         }
     }
     if offset == 0 {
@@ -54,20 +50,12 @@ fn match_dec(state: ParseState) -> ParseResult<&str> {
     let mut offset = 0;
     for c in state.rest_text.chars() {
         match c {
-            '0'..='9' => {
-                offset += 1;
-            }
+            '0'..='9' => offset += 1,
             _ => break,
         }
     }
     if offset == 0 {
-        StopBecause::missing_string("decimal digits", state.start_offset)?
+        StopBecause::missing_character_set("decimal digits", state.start_offset)?
     }
     state.advance_view(offset)
-}
-
-#[test]
-fn test() {
-    let out = dec_u128(ParseState::new(""));
-    println!("{:?}", out);
 }

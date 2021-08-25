@@ -7,48 +7,43 @@ mod number;
 
 pub use self::{color::hex_color, number::*};
 
-/// Match ascii whitespace and newlines, never fails
+/// Match ascii whitespace and newlines, fail if empty
 ///
 /// # Examples
 ///
-/// ```no_run
-/// # use pex::{ParseResult, ParseState};
-/// # use pex::helpers::ascii_whitespace;
+/// ```
+/// # use pex::{ParseResult, ParseState, helpers::ascii_whitespace};
 /// let state = ParseState::new("  \na");
 /// state.skip(ascii_whitespace);
 /// ```
-pub fn ascii_whitespace(state: ParseState) -> ParseResult<Box<str>> {
-    let len = state.rest_text.find(|c: char| !c.is_ascii_whitespace()).unwrap_or(0);
-    state.advance_view(len).map_inner(|s| Box::from(s))
+pub fn ascii_whitespace<'i>(state: ParseState<'i>) -> ParseResult<&'i str> {
+    match state.rest_text.find(|c: char| !c.is_ascii_whitespace()) {
+        Some(len) => state.advance_view(len),
+        None => StopBecause::missing_character(' ', state.start_offset)?,
+    }
 }
 
-/// Match whitespace and newlines, never fails
+/// Match whitespace and newlines, fail if empty
 ///
 /// # Examples
 ///
-/// ```no_run
-/// # use pex::{ParseResult, ParseState};
-/// # use pex::helpers::whitespace;
+/// ```
+/// # use pex::{ParseResult, ParseState, helpers::whitespace};
 /// let state = ParseState::new("  \na");
 /// state.skip(whitespace);
 /// ```
-pub fn whitespace(state: ParseState) -> ParseResult<Box<str>> {
-    let len = state.rest_text.find(|c: char| !c.is_whitespace()).unwrap_or(0);
-    state.advance_view(len).map_inner(|s| Box::from(s))
+pub fn whitespace<'i>(state: ParseState<'i>) -> ParseResult<&'i str> {
+    match state.rest_text.find(|c: char| !c.is_whitespace()) {
+        Some(len) => state.advance_view(len),
+        None => StopBecause::missing_character(' ', state.start_offset)?,
+    }
 }
 
-/// Make the [`from_str`](std::str::FromStr) function from state parser
-///
-/// # Arguments
-///
-/// * `state`:
-/// * `parser`:
-///
-/// returns: Result<T, StopBecause>
+/// Make the [`from_str`](std::str::FromStr) function from the pex parser
 ///
 /// # Examples
 ///
-/// ```no_run
+/// ```
 /// # use std::str::FromStr;
 /// # use pex::{helpers::{make_from_str, whitespace}, ParseResult, ParseState, StopBecause};
 /// # struct Compound;

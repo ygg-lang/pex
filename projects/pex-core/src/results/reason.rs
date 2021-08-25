@@ -16,10 +16,13 @@ impl Display for StopBecause {
             StopBecause::ExpectRepeats { min, current, .. } => {
                 f.write_fmt(format_args!("Expect at least {} repeats (got {})", min, current))
             }
-            StopBecause::MissingCharacter { expected, .. } => f.write_fmt(format_args!("Missing character '{}'", expected)),
-            StopBecause::MissingCharacterRange { start, end, .. } => {
-                f.write_fmt(format_args!("Expect character in range '{}'..='{}'", start, end))
+            StopBecause::MissingCharacterSet { expected, .. } => {
+                f.write_fmt(format_args!("Missing character set `{}`", expected))
             }
+            StopBecause::MissingCharacterRange { start, end, .. } => match start.eq(end) {
+                true => f.write_fmt(format_args!("Missing character '{}'", start)),
+                false => f.write_fmt(format_args!("Expect character in range '{}'..='{}'", start, end)),
+            },
             StopBecause::MissingString { message, .. } => f.write_fmt(format_args!("Missing string '{}'", message)),
             StopBecause::MustBe { message, .. } => f.write_fmt(format_args!("Must be `{}`", message)),
             StopBecause::ShouldNotBe { message, .. } => f.write_fmt(format_args!("Should not be `{}`", message)),
@@ -56,11 +59,15 @@ impl StopBecause {
     }
     /// Create a new `StopBecause::MissingCharacter` error
     pub const fn missing_character<T>(expected: char, position: usize) -> Result<T, StopBecause> {
-        Err(Self::MissingCharacter { expected, position })
+        Err(Self::MissingCharacterRange { start: expected, end: expected, position })
     }
     /// Create a new `StopBecause::MissingCharacterRange` error
     pub const fn missing_character_range<T>(start: char, end: char, position: usize) -> Result<T, StopBecause> {
         Err(Self::MissingCharacterRange { start, end, position })
+    }
+    /// Create a new `StopBecause::MissingCharacter` error
+    pub const fn missing_character_set<T>(expected: &'static str, position: usize) -> Result<T, StopBecause> {
+        Err(Self::MissingCharacterSet { expected, position })
     }
     /// Create a new `StopBecause::MissingString` error
     pub const fn missing_string<T>(message: &'static str, position: usize) -> Result<T, StopBecause> {
@@ -76,12 +83,19 @@ impl StopBecause {
             StopBecause::Uninitialized => 0..0,
             StopBecause::ExpectEof { position } => position..position + 1,
             StopBecause::ExpectRepeats { min: _, current: _, position } => position..position + 1,
-            StopBecause::MissingCharacter { expected, position } => position..position + expected.len_utf8(),
+            StopBecause::MissingCharacterSet { expected: _, position } => position..position + 1,
             StopBecause::MissingCharacterRange { start: _, end: _, position } => position..position + 1,
             StopBecause::MissingString { message, position } => position..position + message.len(),
             StopBecause::MustBe { message: _, position } => position..position + 1,
             StopBecause::ShouldNotBe { message: _, position } => position..position + 1,
-            StopBecause::Custom(CustomError { start, end, .. }) => start..end,
+            StopBecause::Custom(e) => e.range(),
         }
+    }
+}
+
+impl CustomError {
+    /// Create a new [CustomError]
+    pub const fn range(&self) -> Range<usize> {
+        self.start..self.end
     }
 }

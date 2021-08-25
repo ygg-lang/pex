@@ -270,7 +270,7 @@ impl<'i> ParseState<'i> {
         F: FnMut(ParseState<'i>) -> ParseResult<T>,
     {
         if !self.rest_text.starts_with(head) {
-            Stop::<()>(StopBecause::MissingString { message: head, position: self.start_offset })?;
+            StopBecause::missing_string(head, self.start_offset)?;
         }
         let mut offset = head.len();
         let rest = &self.rest_text[offset..];
