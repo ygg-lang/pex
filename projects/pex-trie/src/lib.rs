@@ -3,6 +3,8 @@
 #![warn(missing_docs)]
 
 pub mod generate;
-mod scripts;
+mod regex_set;
+mod unicode_set;
+mod writer;
 
-pub use scripts::UnicodeSet;
+pub use unicode_set::UnicodeSet;

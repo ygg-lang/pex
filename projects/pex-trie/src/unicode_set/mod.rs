@@ -1,6 +1,7 @@
+use crate::writer::EasyWrite;
 use std::{
     collections::BTreeSet,
-    fmt::{Debug, Display, Formatter},
+    fmt::{Debug, Display, Formatter, Write},
 };
 use ucd_trie::{Error, TrieSetOwned};
 
@@ -69,22 +70,7 @@ impl UnicodeSet {
         Ok(code)
     }
     fn write_slice_numbers<T: Display>(&self, buffer: &mut String, slice: &[T], field: &str) {
-        if slice.is_empty() {
-            buffer.push_str(&format!("    {field}: &[],\n"));
-        }
-        else {
-            buffer.push_str(&format!("    {field}: &["));
-            let mut line_width = usize::MAX;
-            for byte in slice {
-                if line_width > self.max_width {
-                    buffer.push_str("\n        ");
-                    line_width = 8;
-                }
-                let char_str = format!("{}, ", byte);
-                buffer.push_str(&char_str);
-                line_width += char_str.len();
-            }
-            buffer.push_str("\n    ],\n");
-        }
+        buffer.push_str(field);
+        buffer.write_slice_numbers(slice, self.max_width, 8).ok();
     }
 }

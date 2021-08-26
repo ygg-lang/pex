@@ -1,6 +1,6 @@
 use pex_trie::{generate::xid::XID_START, UnicodeSet};
+use regex_automata::dfa::{dense, regex::Regex};
 use ucd_trie::TrieSetSlice;
-
 #[test]
 fn ready() {
     println!("it works!")
@@ -11,6 +11,16 @@ fn test() {
     let xid = UnicodeSet::new("xid_start_trie").with_ranges(XID_START);
     println!("{:?}", xid);
     println!("{}", xid.export_rust_code().unwrap());
+}
+
+pub struct Tree {
+    re0: Regex,
+}
+
+impl Tree {
+    pub fn new() {
+        todo!()
+    }
 }
 
 #[rustfmt::skip]

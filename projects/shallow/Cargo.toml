@@ -1,19 +1,16 @@
 [package]
-name = "pex-trie"
-version = "0.0.1"
+name = "shallow"
+version = "0.0.0"
 authors = ["Aster <192607617@qq.com>"]
-description = "A parser combinator library for Rust."
+description = "shallow text"
 repository = "https://github.com/oovm/pex"
 documentation = "https://docs.rs/pex"
 readme = "readme.md"
 license = "MPL-2.0"
 edition = "2021"
-exclude = ["tests/", "packages.json", "build.sh"]
+exclude = ["tests/", "packages.json"]
 
 [dependencies]
-regex-automata = "0.2.0"
-ucd-trie = "0.1.5"
-unicode-script = "0.5.5"
 
 [dev-dependencies]
 
