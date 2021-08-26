@@ -1,6 +1,6 @@
 [package]
 name = "shallow"
-version = "0.0.0"
+version = "0.0.1"
 authors = ["Aster <192607617@qq.com>"]
 description = "shallow text"
 repository = "https://github.com/oovm/pex"

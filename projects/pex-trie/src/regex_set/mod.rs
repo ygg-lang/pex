@@ -17,7 +17,6 @@ impl RegexDenseSet {
         code.push_str(" {\n");
         todo!()
     }
-    pub fn write_new_line
 }
 
 #[test]
@@ -36,7 +35,7 @@ pub fn test_regex() {
     let (fwd_bytes, fwd_pad) = re.forward().to_bytes_big_endian();
     let (rev_bytes, rev_pad) = re.reverse().to_bytes_big_endian();
     #[cfg(target_endian = "big")]
-        let re3 = unsafe {
+    let re3 = unsafe {
         println!("{}: {:?}", fwd_pad, &fwd_bytes[fwd_pad..]);
         println!("{}: {:?}", rev_pad, &rev_bytes[rev_pad..]);
         let fwd: dense::DFA<&[u32]> = dense::DFA::from_bytes_unchecked(&fwd_bytes[fwd_pad..]).unwrap().0;

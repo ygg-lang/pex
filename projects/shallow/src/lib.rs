@@ -4,4 +4,10 @@
 #![doc(html_logo_url = "https://raw.githubusercontent.com/oovm/shape-rs/dev/projects/images/Trapezohedron.svg")]
 #![doc(html_favicon_url = "https://raw.githubusercontent.com/oovm/shape-rs/dev/projects/images/Trapezohedron.svg")]
 
-mod shallow_string;
+mod config;
+mod string;
+
+pub use self::{
+    config::{ShallowBuilder, ShallowMode},
+    string::ShallowString,
+};
