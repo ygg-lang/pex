@@ -6,11 +6,11 @@ use std::{borrow::Cow, fmt::Debug};
 /// # Examples
 ///
 /// ```
-/// # use shallow::ShallowBuilder;
+/// # use shallow::CharacterShallow;
 /// const TEXT10: &str = "1234567890";
 /// const TEXT21: &str = "1234567890_1234567890";
 /// const TEXT27: &str = "1234567890_1234567890_12345";
-/// let sb = ShallowBuilder::new(21, 5);
+/// let sb = CharacterShallow::new(21, 5);
 /// assert_eq!(sb.build_cow(TEXT10), TEXT10); // not change
 /// assert_eq!(sb.build_cow(TEXT21), "1234567890_1234567890"); // not change
 /// assert_eq!(sb.build_cow(TEXT27), "123456789 <...> 12345"); // shorten
@@ -18,7 +18,7 @@ use std::{borrow::Cow, fmt::Debug};
 /// assert_eq!(sb.build_cow(TEXT27), "1234567890_12...12345"); // shorten
 /// ```
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
-pub struct ShallowBuilder {
+pub struct CharacterShallow {
     /// The max width of the [ShallowString]
     pub max_width: usize,
     /// The reserved end width of the [ShallowString]
@@ -27,11 +27,26 @@ pub struct ShallowBuilder {
     pub shallow_text: String,
 }
 
+/// Word level shallow
+#[derive(Copy, Clone, Debug, Eq, PartialEq, Hash)]
+pub struct WordShallow {}
+
+/// Defines how to calculate string length
+pub enum CounterMode {
+    ///
+    Bytes,
+    ///
+    Characters,
+}
+
 /// Change the shallow mode
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
 pub enum ShallowMode {
     /// Add a place holder
-    PlaceHolder { text: Cow<'static, str> },
+    PlaceHolder {
+        ///
+        text: Cow<'static, str>,
+    },
     /// Add a text counter
     Counter {
         /// text before number
@@ -41,26 +56,49 @@ pub enum ShallowMode {
     },
 }
 
-impl ShallowMode {
-    /// Get the shallow text width
-    pub fn size_hint(&self, raw: &str) -> usize {
+impl CounterMode {
+    ///
+    pub fn count(&self, raw: &str) -> usize {
         match self {
-            ShallowMode::PlaceHolder { text } => text.len(),
-            ShallowMode::Counter { lhs, rhs } => {
-                let middle = raw.chars().count();
-                lhs.len() + middle + rhs.len()
-            }
+            CounterMode::Bytes => raw.len(),
+            CounterMode::Characters => raw.chars().count(),
         }
     }
 }
 
-impl Default for ShallowBuilder {
+impl ShallowMode {
+    /// Get the shallow text width
+    pub fn size_hint(&self, counter: CounterMode, fill: &str) -> usize {
+        match self {
+            ShallowMode::PlaceHolder { text } => match counter {
+                CounterMode::Bytes => text.len(),
+                CounterMode::Characters => text.chars().count(),
+            },
+            ShallowMode::Counter { lhs, rhs } => match counter {
+                CounterMode::Bytes => {
+                    let start = lhs.len();
+                    let middle = fill.len();
+                    let end = rhs.len();
+                    start + middle + end
+                }
+                CounterMode::Characters => {
+                    let start = lhs.chars().count();
+                    let middle = fill.chars().count();
+                    let end = rhs.chars().count();
+                    start + middle + end
+                }
+            },
+        }
+    }
+}
+
+impl Default for CharacterShallow {
     fn default() -> Self {
         Self { max_width: 144, end_reserved: 42, shallow_text: " <...> ".to_string() }
     }
 }
 
-impl ShallowBuilder {
+impl CharacterShallow {
     /// build a ss
     pub fn new(width: usize, reversed: usize) -> Self {
         Self { max_width: width, end_reserved: reversed, ..Self::default() }

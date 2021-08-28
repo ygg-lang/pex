@@ -8,6 +8,6 @@ mod config;
 mod string;
 
 pub use self::{
-    config::{ShallowBuilder, ShallowMode},
+    config::{CharacterShallow, CounterMode, ShallowMode, WordShallow},
     string::ShallowString,
 };
