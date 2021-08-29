@@ -4,10 +4,12 @@
 #![doc(html_logo_url = "https://raw.githubusercontent.com/oovm/shape-rs/dev/projects/images/Trapezohedron.svg")]
 #![doc(html_favicon_url = "https://raw.githubusercontent.com/oovm/shape-rs/dev/projects/images/Trapezohedron.svg")]
 
-mod config;
+mod char_level;
 mod string;
+mod word_level;
 
 pub use self::{
-    config::{CharacterShallow, CounterMode, ShallowMode, WordShallow},
+    char_level::{CharacterShallow, CounterMode, ShallowMode},
     string::ShallowString,
+    word_level::WordShallow,
 };

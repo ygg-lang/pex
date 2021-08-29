@@ -1,10 +1,10 @@
 [package]
 name = "shallow"
-version = "0.0.1"
+version = "0.1.1"
 authors = ["Aster <192607617@qq.com>"]
 description = "shallow text"
 repository = "https://github.com/oovm/pex"
-documentation = "https://docs.rs/pex"
+documentation = "https://docs.rs/shallow"
 readme = "readme.md"
 license = "MPL-2.0"
 edition = "2021"

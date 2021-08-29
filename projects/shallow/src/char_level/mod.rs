@@ -24,14 +24,13 @@ pub struct CharacterShallow {
     /// The reserved end width of the [ShallowString]
     pub end_reserved: usize,
     /// The shallow text if
-    pub shallow_text: String,
+    pub shallow: ShallowMode,
+    ///
+    pub counter: CounterMode,
 }
 
-/// Word level shallow
-#[derive(Copy, Clone, Debug, Eq, PartialEq, Hash)]
-pub struct WordShallow {}
-
 /// Defines how to calculate string length
+#[derive(Copy, Clone, Debug, Eq, PartialEq, Hash)]
 pub enum CounterMode {
     ///
     Bytes,
@@ -70,31 +69,32 @@ impl ShallowMode {
     /// Get the shallow text width
     pub fn size_hint(&self, counter: CounterMode, fill: &str) -> usize {
         match self {
-            ShallowMode::PlaceHolder { text } => match counter {
-                CounterMode::Bytes => text.len(),
-                CounterMode::Characters => text.chars().count(),
-            },
-            ShallowMode::Counter { lhs, rhs } => match counter {
-                CounterMode::Bytes => {
-                    let start = lhs.len();
-                    let middle = fill.len();
-                    let end = rhs.len();
-                    start + middle + end
-                }
-                CounterMode::Characters => {
-                    let start = lhs.chars().count();
-                    let middle = fill.chars().count();
-                    let end = rhs.chars().count();
-                    start + middle + end
-                }
-            },
+            ShallowMode::PlaceHolder { text } => counter.count(text),
+            ShallowMode::Counter { lhs, rhs } => {
+                let start = counter.count(lhs);
+                let middle = counter.count(fill);
+                let end = counter.count(rhs);
+                start + middle + end
+            }
+        }
+    }
+    /// Make a string
+    pub fn make_string(&self, fill: &str) -> String {
+        match self {
+            ShallowMode::PlaceHolder { text } => text.to_string(),
+            ShallowMode::Counter { lhs, rhs } => format!("{lhs}{fill}{rhs}"),
         }
     }
 }
 
 impl Default for CharacterShallow {
     fn default() -> Self {
-        Self { max_width: 144, end_reserved: 42, shallow_text: " <...> ".to_string() }
+        Self {
+            max_width: 144,
+            end_reserved: 42,
+            shallow: ShallowMode::PlaceHolder { text: Cow::Borrowed(" <...> ") },
+            counter: CounterMode::Bytes,
+        }
     }
 }
 
@@ -124,13 +124,13 @@ impl CharacterShallow {
         self
     }
     /// build a ss
-    pub fn with_shallow_text(mut self, shallow_text: &str) -> Self {
-        self.shallow_text = shallow_text.to_string();
+    pub fn with_shallow_text(mut self, text: &'static str) -> Self {
+        self.shallow = ShallowMode::PlaceHolder { text: Cow::Borrowed(text) };
         self
     }
     /// build a ss
-    pub fn with_end_reserved(mut self, end_reserved: usize) -> Self {
-        self.end_reserved = end_reserved;
+    pub fn with_end_reserved(mut self, width: usize) -> Self {
+        self.end_reserved = width;
         self
     }
     /// build a ss
@@ -139,14 +139,14 @@ impl CharacterShallow {
             return ShallowString { raw: Cow::Borrowed(raw) };
         }
         let mut string = String::with_capacity(self.max_width);
-        let start_len = self.max_width - self.end_reserved - self.shallow_text.len();
+        let start_len = self.max_width - self.end_reserved - self.shallow.size_hint(self.counter, &"fill");
         // SAFETY: slice is always less than raw.len()
         unsafe {
             let start = raw.get_unchecked(..start_len);
-            let middle = self.shallow_text.as_str();
+            let middle = self.shallow.make_string("0");
             let end = raw.get_unchecked(raw.len() - self.end_reserved..);
             string.push_str(start);
-            string.push_str(middle);
+            string.push_str(middle.as_str());
             string.push_str(end);
         }
         ShallowString { raw: Cow::Owned(string) }
