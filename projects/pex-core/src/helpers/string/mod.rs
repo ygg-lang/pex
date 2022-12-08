@@ -1,5 +1,5 @@
 use super::*;
-
+use std::str::pattern::Pattern;
 
 /// Parse the comment block
 ///
@@ -8,10 +8,15 @@ use super::*;
 /// r##" "##
 /// r###" "###
 /// ```
-pub fn surround_pair<'i>(state: ParseState<'i>, start: &'static str, end: &'static str) -> ParseResult<&'i str> {
+pub fn surround_pair<S, E>(state: ParseState, start: S, end: E) -> ParseResult<&str>
+where
+    S: Pattern<'static>,
+    E: Pattern<'static>,
+{
     if !state.rest_text.starts_with(start) {
         StopBecause::missing_string(start, state.start_offset)?;
     }
+    state.match_str()
     let mut offset = start.len();
     let rest = &state.rest_text[offset..];
     match rest.find(end) {
@@ -19,6 +24,10 @@ pub fn surround_pair<'i>(state: ParseState<'i>, start: &'static str, end: &'stat
         None => StopBecause::missing_string(end, state.start_offset + offset)?,
     }
     state.advance_view(offset)
+}
+#[test]
+fn test() {
+    surround_pair(ParseState::new("r###\"hello\"###"), "r###", "###");
 }
 
 /// Parse the given state as a single quote string.
@@ -35,7 +44,7 @@ pub fn surround_pair<'i>(state: ParseState<'i>, start: &'static str, end: &'stat
 /// use yggdrasil_rt::helpers::paired_with_escaper;
 /// paired_with_escaper(ParseState::new("'hello'"));
 /// ```
-pub fn paired_with_escaper<'i>(state: ParseState<'i>, bound: char, escaper: char) -> ParseResult<&'i str> {
+pub fn surround_pair_with_escaper<'i>(state: ParseState<'i>, bound: char, escaper: char) -> ParseResult<&'i str> {
     let mut offset = 0;
     let mut rest = state.rest_text.chars().peekable();
     match rest.next() {
@@ -76,18 +85,18 @@ pub fn paired_with_escaper<'i>(state: ParseState<'i>, bound: char, escaper: char
 /// # Examples
 ///
 /// ```
-/// # use pex::helpers::single_quote_string;
+/// # use pex::helpers::{single_quote_string, surround_pair};
 /// # use pex::ParseState;
 /// let normal = ParseState::new("'hello'");
 /// let escape = ParseState::new("'hello \\\' world'");
 ///
 /// assert!(single_quote_string(normal).is_success());
 /// assert!(single_quote_string(escape).is_success());
-/// assert!(surround_pair(normal).is_success());
-/// assert!(single_quote_string(escape).is_success());
+/// assert!(surround_pair(normal, "\'", "\'").is_success());
+/// assert!(surround_pair(escape, "\'", "\'").is_failure());
 /// ```
 pub fn single_quote_string<'i>(state: ParseState<'i>) -> ParseResult<&'i str> {
-    paired_with_escaper(state, '\'', '\\')
+    surround_pair_with_escaper(state, '\'', '\\')
 }
 
 /// Parse the given state as a single quote string.
@@ -105,5 +114,5 @@ pub fn single_quote_string<'i>(state: ParseState<'i>) -> ParseResult<&'i str> {
 /// double_quote_string(ParseState::new("'hello'"));
 /// ```
 pub fn double_quote_string<'i>(state: ParseState<'i>) -> ParseResult<&'i str> {
-    paired_with_escaper(state, '"', '\\')
+    surround_pair_with_escaper(state, '"', '\\')
 }

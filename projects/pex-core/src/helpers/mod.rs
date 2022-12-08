@@ -7,7 +7,7 @@ mod color;
 mod number;
 mod string;
 
-pub use self::{color::hex_color, number::*, string::{paired_with_escaper, double_quote_string, single_quote_string}};
+pub use self::{color::hex_color, number::*, string::{surround_pair_with_escaper, double_quote_string, single_quote_string, surround_pair}};
 
 /// Match ascii whitespace and newlines, fail if empty
 ///

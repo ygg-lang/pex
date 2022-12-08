@@ -1,4 +1,5 @@
 use super::*;
+use std::str::pattern::{Pattern, Searcher};
 
 /// Character parsing methods.
 impl<'i> ParseState<'i> {
@@ -64,6 +65,19 @@ impl<'i> ParseState<'i> {
 impl<'i> ParseState<'i> {
     /// Match a static string.
     #[inline]
+    pub fn match_pattern<P>(self, target: P, message: &'static str) -> ParseResult<'i, &'i str>
+    where
+        P: Pattern<'static>,
+    {
+        let mut searcher = target.into_searcher(&self.rest_text);
+        match searcher.next_match() {
+            Some((0, end)) => self.advance_view(end),
+            _ => StopBecause::missing_string(message, self.start_offset)?,
+        }
+    }
+
+    /// Match a static string.
+    #[inline]
     pub fn match_str(self, target: &'static str) -> ParseResult<'i, &'i str> {
         let s = match self.get_string(0..target.len()) {
             Some(s) if s.eq(target) => s.len(),
@@ -71,6 +85,7 @@ impl<'i> ParseState<'i> {
         };
         self.advance_view(s)
     }
+
     /// Match a static string.
     #[inline]
     pub fn match_str_insensitive(self, target: &'static str) -> ParseResult<'i, &'i str> {
