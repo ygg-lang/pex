@@ -2,10 +2,12 @@
 
 use crate::{ParseResult, ParseState, StopBecause};
 use std::str::FromStr;
+
 mod color;
 mod number;
+mod string;
 
-pub use self::{color::hex_color, number::*};
+pub use self::{color::hex_color, number::*, string::{paired_with_escaper, double_quote_string, single_quote_string}};
 
 /// Match ascii whitespace and newlines, fail if empty
 ///
@@ -63,8 +65,8 @@ pub fn whitespace<'i>(state: ParseState<'i>) -> ParseResult<&'i str> {
 /// }
 /// ```
 pub fn make_from_str<T, F>(state: ParseState, parser: F) -> Result<T, StopBecause>
-where
-    F: FnOnce(ParseState) -> ParseResult<T>,
+    where
+        F: FnOnce(ParseState) -> ParseResult<T>,
 {
     match parser(state) {
         ParseResult::Pending(state, compound) if state.is_empty() => Ok(compound),

@@ -3,8 +3,8 @@ use std::fmt::Debug;
 use super::*;
 
 impl<'i, T> Debug for ParseResult<'i, T>
-where
-    T: Debug,
+    where
+        T: Debug,
 {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match self {
@@ -31,8 +31,8 @@ impl<'i, T> ParseResult<'i, T> {
     /// ```
     #[inline(always)]
     pub fn map_inner<F, U>(self, f: F) -> ParseResult<'i, U>
-    where
-        F: FnOnce(T) -> U,
+        where
+            F: FnOnce(T) -> U,
     {
         match self {
             Self::Pending(state, value) => ParseResult::Pending(state, f(value)),
@@ -51,9 +51,9 @@ impl<'i, T> ParseResult<'i, T> {
     /// ```
     #[inline(always)]
     pub fn dispatch<F, G>(self, ok: F, fail: G) -> Self
-    where
-        F: FnOnce(ParseState),
-        G: FnOnce(StopBecause),
+        where
+            F: FnOnce(ParseState),
+            G: FnOnce(StopBecause),
     {
         match &self {
             ParseResult::Pending(data, _) => ok(*data),
@@ -77,6 +77,42 @@ impl<'i, T> ParseResult<'i, T> {
         match self {
             Self::Pending(state, value) => Ok((state, value)),
             Self::Stop(reason) => Err(reason),
+        }
+    }
+    /// Check whether a match is successful, note that an empty match is always successful.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// # use pex::{ParseResult, ParseState};
+    /// # use pex::helpers::{decimal_string, single_quote_string};
+    /// let state = ParseState::new("'hello'");
+    /// assert!(state.match_fn(single_quote_string).is_success());
+    /// assert!(!state.match_fn(decimal_string).is_success());
+    /// ```
+    #[inline(always)]
+    pub fn is_success(&self) -> bool {
+        match self {
+            Self::Pending(..) => true,
+            Self::Stop(..) => false,
+        }
+    }
+    /// Check whether a match is failed, note that an empty match never fails.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// # use pex::{ParseResult, ParseState};
+    /// # use pex::helpers::{decimal_string, single_quote_string};
+    /// let state = ParseState::new("'hello'");
+    /// assert!(!state.match_fn(single_quote_string).is_failure());
+    /// assert!(state.match_fn(decimal_string).is_failure());
+    /// ```
+    #[inline(always)]
+    pub fn is_failure(&self) -> bool {
+        match self {
+            Self::Pending(..) => false,
+            Self::Stop(..) => true,
         }
     }
 }

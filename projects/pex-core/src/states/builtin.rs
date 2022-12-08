@@ -280,36 +280,4 @@ impl<'i> ParseState<'i> {
         }
         self.advance(offset).finish(())
     }
-    /// Parse the comment block
-    ///
-    /// ```ygg
-    /// r#" "#
-    /// r##" "##
-    /// r###" "###
-    /// ```
-    pub fn match_surround<F, T>(self, delimiter: char, min: usize) -> ParseResult<'i, ()>
-    where
-        F: FnMut(ParseState<'i>) -> ParseResult<T>,
-    {
-        let mut count = 0;
-        for c in self.rest_text.chars() {
-            match c == delimiter {
-                true => count += 1,
-                false => break,
-            }
-        }
-        if count == 0 {
-            StopBecause::missing_string("r#", self.start_offset)?
-        }
-        if count < min {
-            StopBecause::missing_string("r##", self.start_offset)?
-        }
-        let head = count * delimiter.len_utf8();
-        let rest = &self.rest_text[head..];
-        let end = delimiter.to_string().repeat(count);
-        match rest.find(&end) {
-            Some(s) => self.advance(s + count * delimiter.len_utf8()).finish(()),
-            None => StopBecause::missing_string("match_raw_paired", self.start_offset + count)?,
-        }
-    }
 }
