@@ -4,7 +4,7 @@ use super::*;
 pub fn decimal_string<'i>(input: ParseState<'i>) -> ParseResult<&'i str> {
     let mut offset = 0;
     let mut first_dot = true;
-    for char in input.rest_text.chars() {
+    for char in input.residual.chars() {
         match char {
             '.' if first_dot => {
                 first_dot = false;
@@ -49,7 +49,7 @@ pub fn dec_usize(state: ParseState) -> ParseResult<usize> {
 
 fn match_dec(state: ParseState) -> ParseResult<&str> {
     let mut offset = 0;
-    for c in state.rest_text.chars() {
+    for c in state.residual.chars() {
         match c {
             '0'..='9' => offset += 1,
             _ => break,

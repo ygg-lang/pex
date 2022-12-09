@@ -1,4 +1,5 @@
 use super::*;
+use crate::patterns::NamedPattern;
 use std::str::pattern::{Pattern, Searcher};
 
 /// Character parsing methods.
@@ -63,19 +64,18 @@ impl<'i> ParseState<'i> {
 }
 
 impl<'i> ParseState<'i> {
-    /// Match a static string.
+    /// Match a static string pattern.
     #[inline]
-    pub fn match_pattern<P>(self, target: P, message: &'static str) -> ParseResult<'i, &'i str>
+    pub fn match_str_pattern<P>(self, target: P, message: &'static str) -> ParseResult<'i, &'i str>
     where
-        P: Pattern<'static>,
+        P: Pattern<'i>,
     {
-        let mut searcher = target.into_searcher(&self.rest_text);
+        let mut searcher = target.into_searcher(&self.residual);
         match searcher.next_match() {
             Some((0, end)) => self.advance_view(end),
             _ => StopBecause::missing_string(message, self.start_offset)?,
         }
     }
-
     /// Match a static string.
     #[inline]
     pub fn match_str(self, target: &'static str) -> ParseResult<'i, &'i str> {
@@ -98,7 +98,7 @@ impl<'i> ParseState<'i> {
     /// Match a string with given regex.
     #[cfg(feature = "regex-automata")]
     pub fn match_regex(&self, re: &Regex, message: &'static str) -> ParseResult<'i, MultiMatch> {
-        match re.try_find_leftmost(self.rest_text.as_bytes()) {
+        match re.try_find_leftmost(self.residual.as_bytes()) {
             Ok(Some(m)) => {
                 let new = self.advance(m.end());
                 Pending(new, m)
@@ -118,7 +118,7 @@ impl<'i> ParseState<'i> {
         F: FnMut(char) -> bool,
     {
         let mut offset = 0;
-        for char in self.rest_text.chars() {
+        for char in self.residual.chars() {
             match predicate(char) {
                 true => offset += char.len_utf8(),
                 false => break,
@@ -127,7 +127,7 @@ impl<'i> ParseState<'i> {
         if offset == 0 {
             StopBecause::missing_string(message, self.start_offset)?;
         }
-        self.advance(offset).finish(&self.rest_text[..offset])
+        self.advance(offset).finish(&self.residual[..offset])
     }
 }
 
@@ -265,14 +265,14 @@ impl<'i> ParseState<'i> {
     /// ```
     #[inline]
     pub fn match_comment_line(self, head: &'static str) -> ParseResult<'i, &'i str> {
-        if !self.rest_text.starts_with(head) {
+        if !self.residual.starts_with(head) {
             StopBecause::missing_string(head, self.start_offset)?;
         }
-        let offset = match self.rest_text.find(|c| c == '\r' || c == '\n') {
+        let offset = match self.residual.find(|c| c == '\r' || c == '\n') {
             Some(s) => s,
-            None => self.rest_text.len(),
+            None => self.residual.len(),
         };
-        self.advance(offset).finish(&self.rest_text[..offset])
+        self.advance(offset).finish(&self.residual[..offset])
     }
     /// Parse the comment block
     ///
@@ -284,11 +284,11 @@ impl<'i> ParseState<'i> {
     where
         F: FnMut(ParseState<'i>) -> ParseResult<T>,
     {
-        if !self.rest_text.starts_with(head) {
+        if !self.residual.starts_with(head) {
             StopBecause::missing_string(head, self.start_offset)?;
         }
         let mut offset = head.len();
-        let rest = &self.rest_text[offset..];
+        let rest = &self.residual[offset..];
         match rest.find(tail) {
             Some(s) => offset += s + tail.len(),
             None => StopBecause::missing_string(tail, self.start_offset + offset)?,

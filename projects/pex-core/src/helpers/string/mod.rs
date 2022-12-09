@@ -1,5 +1,6 @@
 use super::*;
-use std::str::pattern::Pattern;
+use crate::SurroundPairPattern;
+use std::str::pattern::{Pattern, Searcher};
 
 /// Parse the comment block
 ///
@@ -8,26 +9,24 @@ use std::str::pattern::Pattern;
 /// r##" "##
 /// r###" "###
 /// ```
-pub fn surround_pair<S, E>(state: ParseState, start: S, end: E) -> ParseResult<&str>
+pub fn surround_pair<'i, S, E>(state: ParseState<'i>, pattern: SurroundPairPattern<S, E>) -> ParseResult<'i, &'i str>
 where
     S: Pattern<'static>,
     E: Pattern<'static>,
+    'i: 'static,
 {
-    if !state.rest_text.starts_with(start) {
-        StopBecause::missing_string(start, state.start_offset)?;
+    let (state, head) = state.match_str_pattern(pattern.lhs.pattern, pattern.lhs.message)?;
+    let message = pattern.rhs.message;
+    let mut searcher = pattern.rhs.into_searcher(&state.residual);
+    match searcher.next_match() {
+        Some((start, end)) => state.advance_view(end),
+        None => StopBecause::missing_string(message, state.end_offset())?,
     }
-    state.match_str()
-    let mut offset = start.len();
-    let rest = &state.rest_text[offset..];
-    match rest.find(end) {
-        Some(s) => offset += s + end.len(),
-        None => StopBecause::missing_string(end, state.start_offset + offset)?,
-    }
-    state.advance_view(offset)
 }
+
 #[test]
 fn test() {
-    surround_pair(ParseState::new("r###\"hello\"###"), "r###", "###");
+    // surround_pair(ParseState::new("r###\"hello\"###"), "r###", "###");
 }
 
 /// Parse the given state as a single quote string.
@@ -46,7 +45,7 @@ fn test() {
 /// ```
 pub fn surround_pair_with_escaper<'i>(state: ParseState<'i>, bound: char, escaper: char) -> ParseResult<&'i str> {
     let mut offset = 0;
-    let mut rest = state.rest_text.chars().peekable();
+    let mut rest = state.residual.chars().peekable();
     match rest.next() {
         Some(start) if start == bound => offset += bound.len_utf8(),
         _ => StopBecause::missing_character(bound, state.start_offset)?,

@@ -3,15 +3,15 @@ use std::fmt::Debug;
 use super::*;
 
 impl<'i, T> Debug for ParseResult<'i, T>
-    where
-        T: Debug,
+where
+    T: Debug,
 {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match self {
             ParseResult::Pending(s, v) => f
                 .debug_struct("Pending")
                 .field("value", v)
-                .field("rest_text", &s.rest_text)
+                .field("rest_text", &s.residual)
                 .field("start_offset", &s.start_offset)
                 .field("stop_reason", &s.stop_reason)
                 .finish(),
@@ -31,8 +31,8 @@ impl<'i, T> ParseResult<'i, T> {
     /// ```
     #[inline(always)]
     pub fn map_inner<F, U>(self, f: F) -> ParseResult<'i, U>
-        where
-            F: FnOnce(T) -> U,
+    where
+        F: FnOnce(T) -> U,
     {
         match self {
             Self::Pending(state, value) => ParseResult::Pending(state, f(value)),
@@ -51,9 +51,9 @@ impl<'i, T> ParseResult<'i, T> {
     /// ```
     #[inline(always)]
     pub fn dispatch<F, G>(self, ok: F, fail: G) -> Self
-        where
-            F: FnOnce(ParseState),
-            G: FnOnce(StopBecause),
+    where
+        F: FnOnce(ParseState),
+        G: FnOnce(StopBecause),
     {
         match &self {
             ParseResult::Pending(data, _) => ok(*data),

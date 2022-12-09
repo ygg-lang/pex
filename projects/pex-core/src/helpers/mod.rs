@@ -7,7 +7,11 @@ mod color;
 mod number;
 mod string;
 
-pub use self::{color::hex_color, number::*, string::{surround_pair_with_escaper, double_quote_string, single_quote_string, surround_pair}};
+pub use self::{
+    color::hex_color,
+    number::*,
+    string::{double_quote_string, single_quote_string, surround_pair, surround_pair_with_escaper},
+};
 
 /// Match ascii whitespace and newlines, fail if empty
 ///
@@ -19,7 +23,7 @@ pub use self::{color::hex_color, number::*, string::{surround_pair_with_escaper,
 /// state.skip(ascii_whitespace);
 /// ```
 pub fn ascii_whitespace<'i>(state: ParseState<'i>) -> ParseResult<&'i str> {
-    match state.rest_text.find(|c: char| !c.is_ascii_whitespace()) {
+    match state.residual.find(|c: char| !c.is_ascii_whitespace()) {
         Some(len) => state.advance_view(len),
         None => StopBecause::missing_character(' ', state.start_offset)?,
     }
@@ -35,7 +39,7 @@ pub fn ascii_whitespace<'i>(state: ParseState<'i>) -> ParseResult<&'i str> {
 /// state.skip(whitespace);
 /// ```
 pub fn whitespace<'i>(state: ParseState<'i>) -> ParseResult<&'i str> {
-    match state.rest_text.find(|c: char| !c.is_whitespace()) {
+    match state.residual.find(|c: char| !c.is_whitespace()) {
         Some(len) => state.advance_view(len),
         None => StopBecause::missing_character(' ', state.start_offset)?,
     }
@@ -65,8 +69,8 @@ pub fn whitespace<'i>(state: ParseState<'i>) -> ParseResult<&'i str> {
 /// }
 /// ```
 pub fn make_from_str<T, F>(state: ParseState, parser: F) -> Result<T, StopBecause>
-    where
-        F: FnOnce(ParseState) -> ParseResult<T>,
+where
+    F: FnOnce(ParseState) -> ParseResult<T>,
 {
     match parser(state) {
         ParseResult::Pending(state, compound) if state.is_empty() => Ok(compound),

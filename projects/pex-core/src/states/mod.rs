@@ -23,7 +23,7 @@ pub type Parsed<'i, T> = (ParseState<'i>, T);
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
 pub struct ParseState<'i> {
     /// Rest part of string
-    pub rest_text: &'i str,
+    pub residual: &'i str,
     /// Start offset of the string
     pub start_offset: usize,
     /// Stop reason
@@ -34,13 +34,18 @@ impl<'i> ParseState<'i> {
     /// Create a new state
     #[inline(always)]
     pub const fn new(input: &'i str) -> Self {
-        Self { rest_text: input, start_offset: 0, stop_reason: None }
+        Self { residual: input, start_offset: 0, stop_reason: None }
     }
     /// Reset the cursor offset
     #[inline(always)]
     pub const fn with_start_offset(mut self, offset: usize) -> Self {
         self.start_offset = offset;
         self
+    }
+    /// Reset the cursor offset
+    #[inline(always)]
+    pub const fn end_offset(&self) -> usize {
+        self.start_offset + self.residual.len()
     }
     /// Finish with given value
     #[inline(always)]
@@ -50,7 +55,7 @@ impl<'i> ParseState<'i> {
     /// Check if the string is depleted
     #[inline(always)]
     pub const fn is_empty(&self) -> bool {
-        self.rest_text.is_empty()
+        self.residual.is_empty()
     }
     /// Get inner error
     #[inline(always)]
@@ -71,12 +76,12 @@ impl<'i> ParseState<'i> {
     where
         R: SliceIndex<str>,
     {
-        self.rest_text.get(range)
+        self.residual.get(range)
     }
     /// Get nth character
     #[inline(always)]
     pub fn get_character(&self, nth: usize) -> Option<char> {
-        self.rest_text.chars().nth(nth)
+        self.residual.chars().nth(nth)
     }
     /// Get range away from start state
     #[inline(always)]

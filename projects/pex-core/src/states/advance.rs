@@ -42,7 +42,7 @@ impl<'i> ParseState<'i> {
             ParseAdvance::String(v) => v.len(),
         };
         ParseState {
-            rest_text: &self.rest_text[offset..],
+            residual: &self.residual[offset..],
             start_offset: self.start_offset + offset,
             stop_reason: self.stop_reason,
         }
@@ -50,9 +50,9 @@ impl<'i> ParseState<'i> {
     /// Advance the parser state and return the view of these string.
     #[inline]
     pub fn advance_view(self, offset: usize) -> ParseResult<'i, &'i str> {
-        let view = &self.rest_text[0..offset];
+        let view = &self.residual[0..offset];
         ParseState {
-            rest_text: &self.rest_text[offset..],
+            residual: &self.residual[offset..],
             start_offset: self.start_offset + offset,
             stop_reason: self.stop_reason,
         }
