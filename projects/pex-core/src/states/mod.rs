@@ -1,4 +1,9 @@
-use std::{fmt::Debug, ops::Range, slice::SliceIndex};
+use std::{
+    fmt::Debug,
+    ops::Range,
+    slice::SliceIndex,
+    str::pattern::{Pattern, Searcher},
+};
 
 #[cfg(feature = "regex-automata")]
 use regex_automata::{dfa::regex::Regex, MultiMatch};

@@ -1,5 +1,5 @@
 use super::*;
-use crate::SurroundPairPattern;
+use crate::{NamedPattern, StringView, SurroundPair, SurroundPairPattern};
 use std::str::pattern::{Pattern, Searcher};
 
 /// Parse the comment block
@@ -9,24 +9,36 @@ use std::str::pattern::{Pattern, Searcher};
 /// r##" "##
 /// r###" "###
 /// ```
-pub fn surround_pair<'i, S, E>(state: ParseState<'i>, pattern: SurroundPairPattern<S, E>) -> ParseResult<'i, &'i str>
+pub fn surround_pair<'i, S, E>(state: ParseState<'i>, pattern: SurroundPairPattern<S, E>) -> ParseResult<'i, SurroundPair<'i>>
 where
     S: Pattern<'static>,
     E: Pattern<'static>,
     'i: 'static,
 {
-    let (state, head) = state.match_str_pattern(pattern.lhs.pattern, pattern.lhs.message)?;
+    let (body_state, head) = state.match_str_pattern(pattern.lhs.pattern, pattern.lhs.message)?;
+    let lhs = StringView::new(head, state.start_offset);
     let message = pattern.rhs.message;
-    let mut searcher = pattern.rhs.into_searcher(&state.residual);
+    let mut searcher = pattern.rhs.into_searcher(&body_state.residual);
     match searcher.next_match() {
-        Some((start, end)) => state.advance_view(end),
-        None => StopBecause::missing_string(message, state.end_offset())?,
+        Some((start, end)) => {
+            let body = StringView::new(&body_state.residual[..end], body_state.start_offset);
+            let rhs = StringView::new(&body_state.residual[end..], body_state.start_offset + start);
+            let new_state = body_state.advance(end);
+            new_state.finish(SurroundPair { lhs, body, rhs })
+        }
+        None => StopBecause::missing_string(message, body_state.end_offset())?,
     }
 }
 
 #[test]
 fn test() {
-    // surround_pair(ParseState::new("r###\"hello\"###"), "r###", "###");
+    let str1 = SurroundPairPattern {
+        //
+        lhs: NamedPattern::new("\"", "STRING_RAW_LHS"),
+        rhs: NamedPattern::new("\"", "STRING_RAW_LHS"),
+    };
+    let test = surround_pair(ParseState::new("\"hello\"rest rest"), str1);
+    println!("{:#?}", test);
 }
 
 /// Parse the given state as a single quote string.

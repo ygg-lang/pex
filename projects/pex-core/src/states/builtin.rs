@@ -1,6 +1,5 @@
 use super::*;
-use crate::patterns::NamedPattern;
-use std::str::pattern::{Pattern, Searcher};
+
 
 /// Character parsing methods.
 impl<'i> ParseState<'i> {
