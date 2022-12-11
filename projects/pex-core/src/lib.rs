@@ -18,7 +18,10 @@ mod patterns;
 mod results;
 mod states;
 mod third_party;
-pub use crate::patterns::{NamedPattern, StringView, SurroundPair, SurroundPairPattern};
+pub use crate::patterns::{
+    surround_pair::{SurroundPair, SurroundPairPattern},
+    NamedPattern, StringView,
+};
 
 #[cfg(feature = "ucd-trie")]
 pub use ucd_trie::TrieSetSlice;

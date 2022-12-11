@@ -2,8 +2,53 @@ use std::{
     ops::Range,
     str::pattern::{Pattern, ReverseSearcher},
 };
+pub mod surround_pair;
 
-/// A pattern with a name
+/// Used to parse matching surround pairs without escaping, often used to match raw strings,
+/// such as `r###"TEXT"###` in rust and `"""TEXT"""` in toml.
+///
+/// For interpolated strings, it is recommended to use staged parsing, first match the original string,
+/// then match the interpolation, [SurroundPair] contains the starting position information
+///
+/// ## Examples
+///
+/// ```ygg
+/// r#" "#
+/// r##" "##
+/// r###" "###
+/// ```
+///
+/// # Examples
+///
+/// - match `` `1234` ``
+///
+/// ```
+/// # use pex::{helpers::surround_pair, NamedPattern, ParseState, SurroundPairPattern};
+/// let quoted_str = SurroundPairPattern {
+///     lhs: NamedPattern::new('`', "STRING_LHS"),
+///     rhs: NamedPattern::new('`', "STRING_RHS"),
+/// };
+/// let test =
+///     surround_pair(ParseState::new(r#"`12{x}34`rest text"#), quoted_str).as_result().unwrap().1;
+/// assert_eq!(test.head.as_string(), "`");
+/// assert_eq!(test.body.as_string(), "12{x}34");
+/// assert_eq!(test.tail.as_string(), "`");
+/// ```
+///
+/// - match `"""1234"""`
+///
+/// ```
+/// # use pex::{helpers::surround_pair, NamedPattern, ParseState, SurroundPairPattern};
+/// let raw_str = SurroundPairPattern {
+///     lhs: NamedPattern::new("\"\"\"", "STRING_RAW_LHS"),
+///     rhs: NamedPattern::new("\"\"\"", "STRING_RAW_RHS"),
+/// };
+/// let test =
+///     surround_pair(ParseState::new(r#""""1234"""rest text"#), raw_str).as_result().unwrap().1;
+/// assert_eq!(test.head.as_string(), "\"\"\"");
+/// assert_eq!(test.body.as_string(), "1234");
+/// assert_eq!(test.tail.as_string(), "\"\"\"");
+/// ```
 #[derive(Copy, Clone, Debug)]
 pub struct NamedPattern<P>
 where
@@ -61,7 +106,51 @@ where
         Self { pattern, message }
     }
 }
-/// A pattern with a name
+/// Used to parse matching surround pairs without escaping, often used to match raw strings,
+/// such as `r###"TEXT"###` in rust and `"""TEXT"""` in toml.
+///
+/// For interpolated strings, it is recommended to use staged parsing, first match the original string,
+/// then match the interpolation, [SurroundPair] contains the starting position information
+///
+/// ## Examples
+///
+/// ```ygg
+/// r#" "#
+/// r##" "##
+/// r###" "###
+/// ```
+///
+/// # Examples
+///
+/// - match `` `1234` ``
+///
+/// ```
+/// # use pex::{helpers::surround_pair, NamedPattern, ParseState, SurroundPairPattern};
+/// let quoted_str = SurroundPairPattern {
+///     lhs: NamedPattern::new('`', "STRING_LHS"),
+///     rhs: NamedPattern::new('`', "STRING_RHS"),
+/// };
+/// let test =
+///     surround_pair(ParseState::new(r#"`12{x}34`rest text"#), quoted_str).as_result().unwrap().1;
+/// assert_eq!(test.head.as_string(), "`");
+/// assert_eq!(test.body.as_string(), "12{x}34");
+/// assert_eq!(test.tail.as_string(), "`");
+/// ```
+///
+/// - match `"""1234"""`
+///
+/// ```
+/// # use pex::{helpers::surround_pair, NamedPattern, ParseState, SurroundPairPattern};
+/// let raw_str = SurroundPairPattern {
+///     lhs: NamedPattern::new("\"\"\"", "STRING_RAW_LHS"),
+///     rhs: NamedPattern::new("\"\"\"", "STRING_RAW_RHS"),
+/// };
+/// let test =
+///     surround_pair(ParseState::new(r#""""1234"""rest text"#), raw_str).as_result().unwrap().1;
+/// assert_eq!(test.head.as_string(), "\"\"\"");
+/// assert_eq!(test.body.as_string(), "1234");
+/// assert_eq!(test.tail.as_string(), "\"\"\"");
+/// ```
 #[derive(Copy, Clone, Debug)]
 pub struct StringView<'i> {
     start_offset: usize,
@@ -94,38 +183,5 @@ impl<'i> StringView<'i> {
     /// Create a new named pattern
     pub fn as_string(&self) -> String {
         self.string.to_owned()
-    }
-}
-
-/// A pattern with a name
-#[derive(Copy, Clone, Debug)]
-pub struct SurroundPair<'i> {
-    /// The length of the pattern
-    pub lhs: StringView<'i>,
-    /// The length of the pattern
-    pub body: StringView<'i>,
-    /// The length of the pattern
-    pub rhs: StringView<'i>,
-}
-
-/// A pattern with a name
-#[derive(Copy, Clone, Debug)]
-pub struct SurroundPairPattern<S, E>
-where
-    S: Pattern<'static>,
-    E: Pattern<'static>,
-{
-    pub lhs: NamedPattern<S>,
-    pub rhs: NamedPattern<E>,
-}
-
-impl<S, E> SurroundPairPattern<S, E>
-where
-    S: Pattern<'static>,
-    E: Pattern<'static>,
-{
-    /// Create a new named pattern
-    pub fn new(start: NamedPattern<S>, end: NamedPattern<E>) -> Self {
-        Self { lhs: start, rhs: end }
     }
 }

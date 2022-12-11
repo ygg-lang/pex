@@ -1,6 +1,5 @@
 use super::*;
 
-
 /// Character parsing methods.
 impl<'i> ParseState<'i> {
     /// Match a single character.
@@ -119,14 +118,22 @@ impl<'i> ParseState<'i> {
         let mut offset = 0;
         for char in self.residual.chars() {
             match predicate(char) {
-                true => offset += char.len_utf8(),
-                false => break,
+                false => offset += char.len_utf8(),
+                true => break,
             }
         }
         if offset == 0 {
             StopBecause::missing_string(message, self.start_offset)?;
         }
         self.advance(offset).finish(&self.residual[..offset])
+    }
+    /// Match a string with given conditional.
+    #[inline]
+    pub fn match_str_until<F>(self, mut predicate: F, message: &'static str) -> ParseResult<'i, &'i str>
+    where
+        F: FnMut(char) -> bool,
+    {
+        self.match_str_if(|c| !predicate(c), message)
     }
 }
 
