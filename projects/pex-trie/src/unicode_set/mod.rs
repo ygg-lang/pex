@@ -1,7 +1,7 @@
 use crate::writer::EasyWrite;
 use std::{
     collections::BTreeSet,
-    fmt::{Debug, Display, Formatter, Write},
+    fmt::{Debug, Display, Formatter},
 };
 use ucd_trie::{Error, TrieSetOwned};
 

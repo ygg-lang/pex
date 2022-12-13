@@ -102,10 +102,14 @@ impl<'i> ParseState<'i> {
                 Pending(new, m)
             }
             Ok(None) => StopBecause::must_be(message, self.start_offset)?,
-            Err(e) => {
-                eprintln!("Error: {:?}", e);
-                unimplemented!()
-            }
+            Err(e) => match e {
+                regex_automata::MatchError::Quit { byte: _, offset } => {
+                    StopBecause::custom_error("regex match quit", offset, offset)?
+                }
+                regex_automata::MatchError::GaveUp { offset } => {
+                    StopBecause::custom_error("regex match gave up", offset, offset)?
+                }
+            },
         }
     }
 

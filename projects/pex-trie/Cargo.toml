@@ -15,7 +15,16 @@ regex-automata = "0.2.0"
 ucd-trie = "0.1.5"
 unicode-script = "0.5.5"
 
+[dependencies.shallow]
+version = "0.1.*"
+path = "../shallow"
+
 [dev-dependencies]
+
+[dev-dependencies.pex]
+version = "0.1.0"
+path = "../pex-core"
+features = ["ucd-trie", "regex-automata"]
 
 [features]
 default = []

@@ -11,7 +11,7 @@ pub struct RegexDenseSet {
 impl RegexDenseSet {
     pub fn export_rust_code(&self) -> Result<String, std::fmt::Error> {
         let name = self.name.as_str();
-        let mut indent = self.left_indent;
+        let indent = self.left_indent;
 
         let mut code = format!("#[rustfmt::skip]\nconst {name}: TrieSetSlice<'static> = TrieSetSlice");
         code.push_str(" {\n");

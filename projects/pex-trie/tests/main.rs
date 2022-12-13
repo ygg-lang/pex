@@ -1,5 +1,6 @@
+use pex::ParseState;
 use pex_trie::{generate::xid::XID_START, UnicodeSet};
-use regex_automata::dfa::{dense, regex::Regex};
+use regex_automata::dfa::regex::Regex;
 use ucd_trie::TrieSetSlice;
 #[test]
 fn ready() {
@@ -23,8 +24,27 @@ impl Tree {
     }
 }
 
+use ucd_trie::TrieSetOwned;
+
+pub fn test_trie() {
+    let trie = TrieSetOwned::from_codepoints(vec![0x61, 0x62, 0x63]).unwrap();
+    let text = "abc";
+    let s = ParseState::new(text);
+    let s = s.match_char_set(trie.as_slice(), "data");
+    println!("{:#?}", s)
+}
+
+#[test]
+pub fn test_regex() {
+    let re = Regex::new("[0-9]{4}-[0-9]{2}-[0-9]{2}").unwrap();
+    let text = "2018-12-24 2016-10-08";
+    let s = ParseState::new(text);
+    let s = s.match_regex(&re, "data");
+    println!("{:#?}", s)
+}
+
 #[rustfmt::skip]
-const XID_START_TRIE: TrieSetSlice<'static> = TrieSetSlice {
+pub const XID_START_TRIE: TrieSetSlice<'static> = TrieSetSlice {
     tree1_level1: &[
         0, 576460743847706622, 297241973452963840, 18410715276682199039, 18446744073709551615, 18446744073709551615, 18446744073709551615, 18446744073709551615,
         18446744073709551615, 18446744073709551615, 18446744073709551615, 88094074470339, 0, 13321366222785216512, 18446744056529672000, 18428729675200069631,
