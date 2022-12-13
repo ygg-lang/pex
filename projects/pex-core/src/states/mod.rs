@@ -1,16 +1,19 @@
-use alloc::{string::ToString, vec::Vec};
-use core::{fmt::Debug, ops::Range, slice::SliceIndex};
-
-#[cfg(feature = "regex-automata")]
-use regex_automata::{dfa::regex::Regex, MultiMatch};
-#[cfg(feature = "ucd-trie")]
-use ucd_trie::TrieSetSlice;
-
 use crate::{
     results::StopBecause,
     ParseResult,
     ParseResult::{Pending, Stop},
 };
+use alloc::vec::Vec;
+use core::{
+    fmt::Debug,
+    ops::Range,
+    slice::SliceIndex,
+    str::pattern::{Pattern, Searcher},
+};
+#[cfg(feature = "regex-automata")]
+use regex_automata::{dfa::regex::Regex, MultiMatch};
+#[cfg(feature = "ucd-trie")]
+use ucd_trie::TrieSetSlice;
 
 pub mod advance;
 mod builtin;

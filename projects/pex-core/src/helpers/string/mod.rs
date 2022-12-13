@@ -6,12 +6,14 @@ use super::*;
 /// For interpolated strings, it is recommended to use staged parsing, first match the original string,
 /// then match the interpolation, [SurroundPair] contains the starting position information
 ///
-/// ## Examples
+/// # Patterns
 ///
 /// ```ygg
-/// r#" "#
-/// r##" "##
-/// r###" "###
+/// `TEXT`
+/// """TEXT"""
+/// r#"TEXT"#
+/// r##"TEXT"##
+/// r###"TEXT"###
 /// ```
 ///
 /// # Examples
@@ -89,10 +91,13 @@ pub fn surround_pair_with_escaper<'i>(state: ParseState<'i>, bound: char, escape
 /// such strings are allowed to contain escape symbols `\\`,
 /// if you want to disallow escape symbols, please use [surround_pair].
 ///
-/// # Valid
+/// # Patterns
 ///
-/// - `''`
-/// - `""`
+/// ```ygg
+/// ''
+/// 'TEXT'
+/// 'TEXT \' TEXT'
+/// ```
 ///
 /// # Examples
 ///
@@ -112,6 +117,13 @@ pub fn single_quote_string<'i>(state: ParseState<'i>) -> ParseResult<&'i str> {
 /// such strings are allowed to contain escape symbols `\\`,
 /// if you want to disallow escape symbols, please use [surround_pair].
 ///
+/// # Patterns
+///
+/// ```ygg
+/// ""
+/// "TEXT"
+/// "TEXT \" TEXT"
+/// ```
 ///
 /// # Examples
 ///

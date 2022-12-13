@@ -1,4 +1,5 @@
-use std::{
+use alloc::{borrow::ToOwned, string::String};
+use core::{
     ops::Range,
     str::pattern::{Pattern, ReverseSearcher},
 };

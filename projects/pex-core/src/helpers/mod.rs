@@ -1,16 +1,17 @@
 #![doc = include_str!("readme.md")]
-
-use crate::{ParseResult, ParseState, StopBecause};
+use crate::{ParseResult, ParseState, StopBecause, SurroundPair, SurroundPairPattern};
 use core::str::FromStr;
 mod color;
+mod comment;
 mod number;
 mod string;
-
 pub use self::{
     color::hex_color,
+    comment::{comment_block, comment_block_nested, comment_line},
     number::*,
     string::{double_quote_string, single_quote_string, surround_pair, surround_pair_with_escaper},
 };
+use core::str::pattern::Pattern;
 
 /// Match ascii whitespace and newlines, fail if empty
 ///

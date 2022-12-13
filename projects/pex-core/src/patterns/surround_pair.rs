@@ -1,6 +1,6 @@
 use super::*;
 use crate::{ParseResult, ParseState, StopBecause};
-use std::str::pattern::Searcher;
+use core::str::pattern::Searcher;
 
 /// Represents a three-segment string match, including the `head`, `body`, and `tail`, see more example in
 /// [surround_pair](crate::helpers::surround_pair),
