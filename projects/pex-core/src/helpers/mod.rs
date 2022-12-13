@@ -1,11 +1,7 @@
 #![doc = include_str!("readme.md")]
 
-use crate::{ParseResult, ParseState, StopBecause, StringView, SurroundPair, SurroundPairPattern};
-use std::str::{
-    pattern::{Pattern, Searcher},
-    FromStr,
-};
-
+use crate::{ParseResult, ParseState, StopBecause};
+use core::str::FromStr;
 mod color;
 mod number;
 mod string;

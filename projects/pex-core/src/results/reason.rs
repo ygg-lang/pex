@@ -9,7 +9,7 @@ impl Default for StopBecause {
 impl Error for StopBecause {}
 
 impl Display for StopBecause {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+    fn fmt(&self, f: &mut Formatter<'_>) -> core::fmt::Result {
         match self {
             StopBecause::Uninitialized => f.write_str("Uninitialized"),
             StopBecause::ExpectEof { .. } => f.write_str("Expect end of file"),
@@ -34,7 +34,7 @@ impl Display for StopBecause {
 impl Error for CustomError {}
 
 impl Debug for CustomError {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+    fn fmt(&self, f: &mut Formatter<'_>) -> core::fmt::Result {
         f.debug_struct("CustomError")
             .field("message", &self.message)
             .field("range", &Range { start: self.start, end: self.end })
@@ -43,7 +43,7 @@ impl Debug for CustomError {
 }
 
 impl Display for CustomError {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+    fn fmt(&self, f: &mut Formatter<'_>) -> core::fmt::Result {
         f.write_str(&self.message)
     }
 }

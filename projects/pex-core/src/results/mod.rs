@@ -1,4 +1,4 @@
-use std::{
+use core::{
     convert::Infallible,
     error::Error,
     fmt::{Debug, Display, Formatter},

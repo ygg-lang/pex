@@ -1,12 +1,10 @@
-use std::fmt::Debug;
-
 use super::*;
 
 impl<'i, T> Debug for ParseResult<'i, T>
 where
     T: Debug,
 {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+    fn fmt(&self, f: &mut Formatter<'_>) -> core::fmt::Result {
         match self {
             ParseResult::Pending(s, v) => f
                 .debug_struct("Pending")
