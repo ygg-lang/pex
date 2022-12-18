@@ -77,6 +77,24 @@ impl<'i, T> ParseResult<'i, T> {
             Self::Stop(reason) => Err(reason),
         }
     }
+    /// Returns the contained [`ParseResult::Pending`] value, drop current state, panic if state reach stopped.
+    ///
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// # use pex::{ParseResult, ParseState};
+    /// let state = ParseState::new("hello");
+    /// let result = state.finish(());
+    /// assert_eq!(result.as_result(), Ok((state, ())));
+    /// ```
+    #[inline(always)]
+    pub fn unwrap(self) -> T {
+        match self {
+            ParseResult::Pending(_, v) => v,
+            ParseResult::Stop(e) => panic!("{e}"),
+        }
+    }
     /// Check whether a match is successful, note that an empty match is always successful.
     ///
     /// # Examples
