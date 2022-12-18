@@ -3,7 +3,7 @@ use std::fmt::{Display, Write};
 impl EasyWrite for String {}
 
 pub trait EasyWrite: Write {
-    fn write_slice_numbers<T: Display>(&mut self, slice: &[T], max_width: usize, indent: usize) -> std::fmt::Result {
+    fn write_slice_numbers<T: Display>(&mut self, slice: &[T], max_width: usize, indent: usize) -> core::fmt::Result {
         if slice.is_empty() {
             self.write_str("&[],\n")?;
         }

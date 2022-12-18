@@ -8,7 +8,7 @@ fn ready() {
 }
 
 #[test]
-fn test() {
+fn dump_xid_start() {
     let xid = UnicodeSet::new("xid_start_trie").with_ranges(XID_START);
     println!("{:?}", xid);
     println!("{}", xid.export_rust_code().unwrap());

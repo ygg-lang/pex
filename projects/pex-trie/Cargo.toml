@@ -1,6 +1,6 @@
 [package]
 name = "pex-trie"
-version = "0.0.1"
+version = "0.0.3"
 authors = ["Aster <192607617@qq.com>"]
 description = "A parser combinator library for Rust."
 repository = "https://github.com/oovm/pex"
@@ -14,10 +14,6 @@ exclude = ["tests/", "packages.json", "build.sh"]
 regex-automata = "0.2.0"
 ucd-trie = "0.1.5"
 unicode-script = "0.5.5"
-
-[dependencies.shallow]
-version = "0.1.*"
-path = "../shallow"
 
 [dev-dependencies]
 

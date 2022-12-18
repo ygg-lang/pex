@@ -1,6 +1,5 @@
 #![doc = include_str!("readme.md")]
 use crate::{ParseResult, ParseState, StopBecause, SurroundPair, SurroundPairPattern};
-use core::str::FromStr;
 mod color;
 mod comment;
 mod number;
@@ -22,6 +21,7 @@ use core::str::pattern::Pattern;
 /// let state = ParseState::new("  \na");
 /// state.skip(ascii_whitespace);
 /// ```
+#[inline]
 pub fn ascii_whitespace<'i>(state: ParseState<'i>) -> ParseResult<&'i str> {
     match state.residual.find(|c: char| !c.is_ascii_whitespace()) {
         Some(len) => state.advance_view(len),
@@ -38,6 +38,7 @@ pub fn ascii_whitespace<'i>(state: ParseState<'i>) -> ParseResult<&'i str> {
 /// let state = ParseState::new("  \na");
 /// state.skip(whitespace);
 /// ```
+#[inline]
 pub fn whitespace<'i>(state: ParseState<'i>) -> ParseResult<&'i str> {
     match state.residual.find(|c: char| !c.is_whitespace()) {
         Some(len) => state.advance_view(len),
@@ -68,6 +69,7 @@ pub fn whitespace<'i>(state: ParseState<'i>) -> ParseResult<&'i str> {
 ///     }
 /// }
 /// ```
+#[inline]
 pub fn make_from_str<T, F>(state: ParseState, parser: F) -> Result<T, StopBecause>
 where
     F: FnOnce(ParseState) -> ParseResult<T>,
