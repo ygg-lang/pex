@@ -1,5 +1,10 @@
 use crate::string::ShallowString;
-use std::{borrow::Cow, fmt::Debug};
+use alloc::{
+    borrow::Cow,
+    format,
+    string::{String, ToString},
+};
+use core::fmt::Debug;
 
 /// A builder to create the `ShallowString`.
 ///

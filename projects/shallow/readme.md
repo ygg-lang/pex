@@ -1,4 +1,4 @@
-# Text Shallower
+# Text Shallow
 
 - character by character, place-holder mode
 

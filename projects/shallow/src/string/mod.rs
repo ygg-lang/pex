@@ -1,7 +1,5 @@
-use std::{
-    borrow::Cow,
-    fmt::{Debug, Formatter},
-};
+use alloc::borrow::Cow;
+use core::fmt::{Debug, Formatter};
 
 /// A placeholder string type
 pub struct ShallowString<'a> {
@@ -9,7 +7,7 @@ pub struct ShallowString<'a> {
 }
 
 impl<'a> Debug for ShallowString<'a> {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+    fn fmt(&self, f: &mut Formatter<'_>) -> core::fmt::Result {
         f.write_str(self.raw.as_ref())
     }
 }

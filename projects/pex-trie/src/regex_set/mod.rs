@@ -1,4 +1,4 @@
-use regex_automata::dfa::regex::Regex;
+use regex_automata::dfa::{dense, regex::Regex};
 
 pub struct RegexDenseSet {
     name: String,
