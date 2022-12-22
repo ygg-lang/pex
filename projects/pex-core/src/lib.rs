@@ -16,7 +16,7 @@ pub use crate::{
         surround_pair::{SurroundPair, SurroundPairPattern},
         NamedPattern, StringView,
     },
-    results::{ParseResult, StopBecause},
+    results::{CustomError, ParseResult, StopBecause},
     states::{advance::ParseAdvance, choice::ChoiceHelper, ParseState, Parsed},
 };
 

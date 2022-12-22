@@ -46,7 +46,7 @@ pub fn whitespace<'i>(state: ParseState<'i>) -> ParseResult<&'i str> {
     }
 }
 
-/// Make the [`from_str`](std::str::FromStr) function from the pex parser
+/// Make the [`from_str`](core::str::FromStr) function from the pex parser
 ///
 /// # Examples
 ///
@@ -76,7 +76,7 @@ where
 {
     match parser(state) {
         ParseResult::Pending(state, compound) if state.is_empty() => Ok(compound),
-        ParseResult::Pending(state, ..) => Err(StopBecause::ExpectEof { position: state.start_offset }),
+        ParseResult::Pending(state, ..) => Err(StopBecause::ExpectEOF { position: state.start_offset }),
         ParseResult::Stop(e) => Err(e),
     }
 }

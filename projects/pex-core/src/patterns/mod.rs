@@ -5,11 +5,7 @@ use core::{
 };
 pub mod surround_pair;
 
-/// Used to parse matching surround pairs without escaping, often used to match raw strings,
-/// such as `r###"TEXT"###` in rust and `"""TEXT"""` in toml.
-///
-/// For interpolated strings, it is recommended to use staged parsing, first match the original string,
-/// then match the interpolation, [SurroundPair] contains the starting position information
+/// A string pattern with a message for error reporting
 ///
 /// ## Examples
 ///
@@ -51,79 +47,68 @@ pub mod surround_pair;
 /// assert_eq!(test.tail.as_string(), "\"\"\"");
 /// ```
 #[derive(Copy, Clone, Debug)]
-pub struct NamedPattern<'a, P>
+pub struct NamedPattern<P>
 where
-    P: Pattern<'a>,
+    P: Pattern<'static>,
 {
     /// The pattern to match
     pub pattern: P,
     /// Error message to display if the pattern is failed to match
-    pub message: &'a str,
+    ///
+    /// This must static, since error message are all static
+    pub message: &'static str,
 }
 
-impl<'a, P> Pattern<'a> for NamedPattern<'a, P>
+impl<P> Pattern<'static> for NamedPattern<P>
 where
-    P: Pattern<'a>,
+    P: Pattern<'static>,
 {
     type Searcher = P::Searcher;
 
-    fn into_searcher(self, haystack: &'a str) -> Self::Searcher {
+    fn into_searcher(self, haystack: &'static str) -> Self::Searcher {
         self.pattern.into_searcher(haystack)
     }
 
-    fn is_contained_in(self, haystack: &'a str) -> bool {
+    fn is_contained_in(self, haystack: &'static str) -> bool {
         self.pattern.is_contained_in(haystack)
     }
 
-    fn is_prefix_of(self, haystack: &'a str) -> bool {
+    fn is_prefix_of(self, haystack: &'static str) -> bool {
         self.pattern.is_prefix_of(haystack)
     }
 
-    fn is_suffix_of(self, haystack: &'a str) -> bool
+    fn is_suffix_of(self, haystack: &'static str) -> bool
     where
-        Self::Searcher: ReverseSearcher<'a>,
+        Self::Searcher: ReverseSearcher<'static>,
     {
         self.pattern.is_suffix_of(haystack)
     }
 
-    fn strip_prefix_of(self, haystack: &'a str) -> Option<&'a str> {
+    fn strip_prefix_of(self, haystack: &'static str) -> Option<&'static str> {
         self.pattern.strip_prefix_of(haystack)
     }
 
-    fn strip_suffix_of(self, haystack: &'a str) -> Option<&'a str>
+    fn strip_suffix_of(self, haystack: &'static str) -> Option<&'static str>
     where
-        Self::Searcher: ReverseSearcher<'a>,
+        Self::Searcher: ReverseSearcher<'static>,
     {
         self.pattern.strip_suffix_of(haystack)
     }
 }
 
-impl<'a, P> NamedPattern<'a, P>
+impl<P> NamedPattern<P>
 where
-    P: Pattern<'a>,
+    P: Pattern<'static>,
 {
     /// Create a new named pattern
-    pub fn new(pattern: P, message: &'a str) -> Self {
+    pub fn new(pattern: P, message: &'static str) -> Self {
         Self { pattern, message }
     }
 }
-/// Used to parse matching surround pairs without escaping, often used to match raw strings,
-/// such as `r###"TEXT"###` in rust and `"""TEXT"""` in toml.
+/// A string view with range information from the raw string.
 ///
-/// For interpolated strings, it is recommended to use staged parsing, first match the original string,
-/// then match the interpolation, [SurroundPair] contains the starting position information
-///
-/// ## Examples
-///
-/// ```ygg
-/// r#" "#
-/// r##" "##
-/// r###" "###
-/// ```
 ///
 /// # Examples
-///
-/// - match `` `1234` ``
 ///
 /// ```
 /// # use pex::{helpers::surround_pair, NamedPattern, ParseState, SurroundPairPattern};
@@ -131,26 +116,10 @@ where
 ///     lhs: NamedPattern::new('`', "STRING_LHS"),
 ///     rhs: NamedPattern::new('`', "STRING_RHS"),
 /// };
-/// let test =
-///     surround_pair(ParseState::new(r#"`12{x}34`rest text"#), quoted_str).as_result().unwrap().1;
-/// assert_eq!(test.head.as_string(), "`");
+/// let test = surround_pair(ParseState::new(r#"`12{x}34`rest text"#), quoted_str).unwrap();
+/// assert_eq!(test.head.as_range(), 0..1);
 /// assert_eq!(test.body.as_string(), "12{x}34");
-/// assert_eq!(test.tail.as_string(), "`");
-/// ```
-///
-/// - match `"""1234"""`
-///
-/// ```
-/// # use pex::{helpers::surround_pair, NamedPattern, ParseState, SurroundPairPattern};
-/// let raw_str = SurroundPairPattern {
-///     lhs: NamedPattern::new("\"\"\"", "STRING_RAW_LHS"),
-///     rhs: NamedPattern::new("\"\"\"", "STRING_RAW_RHS"),
-/// };
-/// let test =
-///     surround_pair(ParseState::new(r#""""1234"""rest text"#), raw_str).as_result().unwrap().1;
-/// assert_eq!(test.head.as_string(), "\"\"\"");
-/// assert_eq!(test.body.as_string(), "1234");
-/// assert_eq!(test.tail.as_string(), "\"\"\"");
+/// assert_eq!(test.tail.as_range(), 8..9);
 /// ```
 #[derive(Copy, Clone, Debug)]
 pub struct StringView<'i> {

@@ -66,12 +66,13 @@ where
 }
 
 /// Comment a nested block
+#[allow(unused_variables)]
 pub fn comment_block_nested<'i>(
     state: ParseState<'i>,
     head: &'static str,
     tail: &'static str,
 ) -> ParseResult<'i, SurroundPair<'i>> {
     let (body_state, head) = state.match_str(head)?;
-    let mut nested = 1;
+    let nested = 1;
     todo!()
 }

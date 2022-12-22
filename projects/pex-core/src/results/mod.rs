@@ -21,13 +21,13 @@ pub enum ParseResult<'i, T> {
     Stop(StopBecause),
 }
 
-/// Must copy
+/// Stop reason, contains the minimum information needed to express an error.
 #[derive(Copy, Clone, Debug, Eq, PartialEq, Hash)]
 pub enum StopBecause {
     /// This error is not initialized
     Uninitialized,
     /// Expect end of string
-    ExpectEof {
+    ExpectEOF {
         /// The offset of the location where the error occurred
         position: usize,
     },
@@ -90,10 +90,4 @@ pub struct CustomError {
     pub start: usize,
     /// The end offset of the location where the error occurred
     pub end: usize,
-}
-
-impl From<CustomError> for StopBecause {
-    fn from(value: CustomError) -> Self {
-        Self::Custom(value)
-    }
 }

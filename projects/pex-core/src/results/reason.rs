@@ -12,7 +12,7 @@ impl Display for StopBecause {
     fn fmt(&self, f: &mut Formatter<'_>) -> core::fmt::Result {
         match self {
             StopBecause::Uninitialized => f.write_str("Uninitialized"),
-            StopBecause::ExpectEof { .. } => f.write_str("Expect end of file"),
+            StopBecause::ExpectEOF { .. } => f.write_str("Expect end of file"),
             StopBecause::ExpectRepeats { min, current, .. } => {
                 f.write_fmt(format_args!("Expect at least {} repeats (got {})", min, current))
             }
@@ -48,6 +48,12 @@ impl Display for CustomError {
     }
 }
 
+impl From<CustomError> for StopBecause {
+    fn from(value: CustomError) -> Self {
+        Self::Custom(value)
+    }
+}
+
 impl StopBecause {
     /// Create a new `StopBecause::MustBe` error
     pub const fn must_be<T>(message: &'static str, position: usize) -> Result<T, StopBecause> {
@@ -55,7 +61,7 @@ impl StopBecause {
     }
     /// Create a new `StopBecause::ExpectEof` error
     pub const fn expect_eof<T>(position: usize) -> Result<T, StopBecause> {
-        Err(Self::ExpectEof { position })
+        Err(Self::ExpectEOF { position })
     }
     /// Create a new `StopBecause::MissingCharacter` error
     pub const fn missing_character<T>(expected: char, position: usize) -> Result<T, StopBecause> {
@@ -81,7 +87,7 @@ impl StopBecause {
     pub const fn range(&self) -> Range<usize> {
         match *self {
             StopBecause::Uninitialized => 0..0,
-            StopBecause::ExpectEof { position } => position..position + 1,
+            StopBecause::ExpectEOF { position } => position..position + 1,
             StopBecause::ExpectRepeats { min: _, current: _, position } => position..position + 1,
             StopBecause::MissingCharacterSet { expected: _, position } => position..position + 1,
             StopBecause::MissingCharacterRange { start: _, end: _, position } => position..position + 1,

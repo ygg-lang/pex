@@ -3,8 +3,7 @@ A parser combinator library based on nightly rust.
 
 ## Tutorial
 
-[Choose your parser combinator](src/helpers/readme.md)
-
+[Choose your parser combinator](https://docs.rs/pex/latest/pex/helpers/index.html)
 
 
 ## Technical features
@@ -29,11 +28,6 @@ First you need to return `Vec<()>`, [ZST](https://doc.rust-lang.org/std/vec/stru
 Then use the pre-allocated arena tree structure (such as [indextree](https://crates.io/crates/indextree)) to record the parent-child relationship of nodes to avoid reallocation.
 
 Memory allocation is not terrible, what is terrible is frequent fragmentary allocation.
-
-### Incremental Parsing
-
-Pex does not directly support incremental parsing
-
 
 ### Error Reporting
 

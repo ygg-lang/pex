@@ -11,6 +11,7 @@ edition = "2021"
 exclude = ["tests/", "packages.json", "build.sh"]
 
 [dependencies]
+pest = "2.6.0"
 regex-automata = "0.2.0"
 ucd-trie = "0.1.5"
 unicode-script = "0.5.5"

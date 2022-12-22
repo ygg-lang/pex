@@ -67,6 +67,7 @@ impl<'i> ParseState<'i> {
     pub fn match_str_pattern<'a, P>(self, target: P, message: &'static str) -> ParseResult<'i, &'i str>
     where
         P: Pattern<'a>,
+        'i: 'a,
     {
         let mut searcher = target.into_searcher(&self.residual);
         match searcher.next_match() {
@@ -76,7 +77,7 @@ impl<'i> ParseState<'i> {
     }
     /// Match a static string.
     #[inline]
-    pub fn match_str(self, target: &'static str) -> ParseResult<'i, &'i str> {
+    pub fn match_str<'a>(self, target: &'static str) -> ParseResult<'i, &'i str> {
         let s = match self.get_string(0..target.len()) {
             Some(s) if s.eq(target) => s.len(),
             _ => StopBecause::missing_string(target, self.start_offset)?,

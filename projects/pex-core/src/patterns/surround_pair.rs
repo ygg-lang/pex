@@ -62,21 +62,21 @@ pub struct SurroundPair<'i> {
 /// assert_eq!(test.tail.as_string(), "\"\"\"");
 /// ```
 #[derive(Copy, Clone, Debug)]
-pub struct SurroundPairPattern<'a, S, E>
+pub struct SurroundPairPattern<S, E>
 where
-    S: Pattern<'a>,
-    E: Pattern<'a>,
+    S: Pattern<'static>,
+    E: Pattern<'static>,
 {
     /// The length of the pattern
-    pub lhs: NamedPattern<'a, S>,
+    pub lhs: NamedPattern<S>,
     /// The length of the pattern
-    pub rhs: NamedPattern<'a, E>,
+    pub rhs: NamedPattern<E>,
 }
 
-impl<'a, S, E> SurroundPairPattern<'a, S, E>
+impl<S, E> SurroundPairPattern<S, E>
 where
-    S: Pattern<'a>,
-    E: Pattern<'a>,
+    S: Pattern<'static>,
+    E: Pattern<'static>,
 {
     /// Used to parse matching surround pairs without escaping, often used to match raw strings,
     /// such as `r###"TEXT"###` in rust and `"""TEXT"""` in toml.
@@ -139,7 +139,10 @@ where
     ///     rhs: NamedPattern::new("\"\"\"", "STRING_RAW_RHS"),
     /// };
     /// ```
-    pub fn consume_state<'i>(self, state: ParseState<'i>) -> ParseResult<'i, SurroundPair<'i>> {
+    pub fn consume_state<'i>(self, state: ParseState<'i>) -> ParseResult<'i, SurroundPair<'i>>
+    where
+        'i: 'static,
+    {
         let (body_state, head) = state.match_str_pattern(self.lhs.pattern, self.lhs.message)?;
         let lhs = StringView::new(head, state.start_offset);
         let message = self.rhs.message;
