@@ -1,3 +1,4 @@
+use crate::StringView;
 use super::*;
 
 /// Used to parse matching surround pairs without escaping, often used to match raw strings,
@@ -128,13 +129,39 @@ pub fn single_quote_string<'i>(state: ParseState<'i>) -> ParseResult<&'i str> {
 /// # Examples
 ///
 /// ```
-/// # use pex::{helpers::{double_quote_string}, ParseState};
+/// # use pex::{helpers::{escaped_quotation_pair}, ParseState};
 /// let normal = ParseState::new(r#""hello""#);
 /// let escape = ParseState::new(r#""hello \" world""#);
 ///
-/// assert!(double_quote_string(normal).is_success());
-/// assert!(double_quote_string(escape).is_success());
+/// assert!(escaped_quotation_pair(normal, '"').is_success());
+/// assert!(escaped_quotation_pair(escape, '"').is_success());
 /// ```
-pub fn double_quote_string<'i>(state: ParseState<'i>) -> ParseResult<&'i str> {
-    surround_pair_with_escaper(state, '"', '\\')
+pub fn escaped_quotation_pair<'i>(state: ParseState<'i>, bound: char) -> ParseResult<&'i str> {
+    surround_pair_with_escaper(state, bound, '\\')
+}
+
+pub fn nested_quotation_pair(input: ParseState, delimiter: char) -> ParseResult<SurroundPair> {
+    let (state, bound) = input.match_str_if(|c| c != delimiter, "QUOTE")?;
+    match bound.len() {
+        0 => StopBecause::missing_character(delimiter, input.start_offset)?,
+        2 => state.finish(SurroundPair {
+            head: StringView::new(bound, input.start_offset),
+            body: StringView::new("", input.start_offset + 1),
+            tail: StringView::new(bound, input.start_offset + 1),
+        }),
+        n => {
+            match state.residual.find(bound) {
+                Some(s) => state.advance(n + s).finish(SurroundPair {
+                    head: StringView::new(bound, input.start_offset),
+                    // SAFETY: `lhs` is a substring of `state.residual`
+                    body: unsafe {
+                        let text = state.residual.get_unchecked(0..s);
+                        StringView::new(text, input.start_offset + n)
+                    },
+                    tail: StringView::new(bound, input.start_offset + n + s),
+                }),
+                None => StopBecause::missing_character(delimiter, state.start_offset)?,
+            }
+        }
+    }
 }

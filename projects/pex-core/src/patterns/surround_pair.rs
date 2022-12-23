@@ -4,7 +4,7 @@ use core::str::pattern::Searcher;
 
 /// Represents a three-segment string match, including the `head`, `body`, and `tail`, see more example in
 /// [surround_pair](crate::helpers::surround_pair),
-/// [double_quote_string](crate::helpers::double_quote_string),
+/// [double_quote_string](crate::helpers::escaped_quotation_pair),
 /// [single_quote_string](crate::helpers::single_quote_string)
 #[derive(Copy, Clone, Debug)]
 pub struct SurroundPair<'i> {
