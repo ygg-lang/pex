@@ -123,8 +123,8 @@ impl<'i> ParseState<'i> {
         let mut offset = 0;
         for char in self.residual.chars() {
             match predicate(char) {
-                false => offset += char.len_utf8(),
-                true => break,
+                true => offset += char.len_utf8(),
+                false => break
             }
         }
         if offset == 0 {
