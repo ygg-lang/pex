@@ -1,4 +1,4 @@
-use crate::StringView;
+use crate::{NamedPattern, StringView};
 use super::*;
 
 /// Used to parse matching surround pairs without escaping, often used to match raw strings,
@@ -49,10 +49,10 @@ use super::*;
 /// assert_eq!(paired.tail.as_string(), "\"\"\"");
 /// ```
 pub fn surround_pair<'i, S, E>(state: ParseState<'i>, pattern: SurroundPairPattern<S, E>) -> ParseResult<'i, SurroundPair<'i>>
-where
-    S: Pattern<'static>,
-    E: Pattern<'static>,
-    'i: 'static,
+    where
+        S: Pattern<'static>,
+        E: Pattern<'static>,
+        'i: 'static,
 {
     pattern.consume_state(state)
 }
@@ -103,15 +103,22 @@ pub fn surround_pair_with_escaper<'i>(state: ParseState<'i>, bound: char, escape
 /// # Examples
 ///
 /// ```
-/// # use pex::{helpers::{single_quote_string}, ParseState};
+/// # use pex::{helpers::{quotation_pair}, ParseState};
 /// let normal = ParseState::new("'hello'");
 /// let escape = ParseState::new("'hello \\\' world'");
 ///
-/// assert!(single_quote_string(normal).is_success());
-/// assert!(single_quote_string(escape).is_success());
+/// assert!(quotation_pair(normal, '\'', '\'').is_success());
+/// assert!(quotation_pair(escape, '\'', '\'').is_success());
 /// ```
-pub fn single_quote_string<'i>(state: ParseState<'i>) -> ParseResult<&'i str> {
-    surround_pair_with_escaper(state, '\'', '\\')
+pub fn quotation_pair(input: ParseState, lhs: char, rhs: char) -> ParseResult<SurroundPair> {
+    let (s_lhs, left) = input.match_str_if(|c| c == lhs, "QUOTATION_LHS")?;
+    let (s_body, body) = s_lhs.match_str_until(|c| c == rhs, "QUOTATION_RHS")?;
+    let (s_rhs, right) = s_body.match_str_if(|c| c == rhs, "QUOTATION_RHS")?;
+    s_rhs.finish(SurroundPair {
+        head: StringView::new(left, input.start_offset),
+        body: StringView::new(body, s_lhs.start_offset),
+        tail: StringView::new(right, s_body.start_offset),
+    })
 }
 
 /// Parse the given state as a single quote string,
@@ -129,18 +136,40 @@ pub fn single_quote_string<'i>(state: ParseState<'i>) -> ParseResult<&'i str> {
 /// # Examples
 ///
 /// ```
-/// # use pex::{helpers::{escaped_quotation_pair}, ParseState};
+/// # use pex::{helpers::{quotation_pair_escaped}, ParseState};
 /// let normal = ParseState::new(r#""hello""#);
 /// let escape = ParseState::new(r#""hello \" world""#);
 ///
-/// assert!(escaped_quotation_pair(normal, '"').is_success());
-/// assert!(escaped_quotation_pair(escape, '"').is_success());
+/// assert!(quotation_pair_escaped(normal, '"').is_success());
+/// assert!(quotation_pair_escaped(escape, '"').is_success());
 /// ```
-pub fn escaped_quotation_pair<'i>(state: ParseState<'i>, bound: char) -> ParseResult<&'i str> {
+pub fn quotation_pair_escaped<'i>(state: ParseState<'i>, bound: char) -> ParseResult<&'i str> {
     surround_pair_with_escaper(state, bound, '\\')
 }
 
-pub fn nested_quotation_pair(input: ParseState, delimiter: char) -> ParseResult<SurroundPair> {
+/// Parse the given state as a single quote string,
+/// such strings are allowed to contain escape symbols `\\`,
+/// if you want to disallow escape symbols, please use [surround_pair].
+///
+/// # Patterns
+///
+/// ```ygg
+/// ""
+/// "TEXT"
+/// "TEXT \" TEXT"
+/// ```
+///
+/// # Examples
+///
+/// ```
+/// # use pex::{helpers::{quotation_pair_escaped}, ParseState};
+/// let normal = ParseState::new(r#""hello""#);
+/// let escape = ParseState::new(r#""hello \" world""#);
+///
+/// assert!(quotation_pair_escaped(normal, '"').is_success());
+/// assert!(quotation_pair_escaped(escape, '"').is_success());
+/// ```
+pub fn quotation_pair_nested(input: ParseState, delimiter: char) -> ParseResult<SurroundPair> {
     let (state, bound) = input.match_str_if(|c| c != delimiter, "QUOTE")?;
     match bound.len() {
         0 => StopBecause::missing_character(delimiter, input.start_offset)?,

@@ -8,7 +8,7 @@ pub use self::{
     color::hex_color,
     comment::{comment_block, comment_block_nested, comment_line},
     number::*,
-    string::{escaped_quotation_pair, single_quote_string, surround_pair, surround_pair_with_escaper},
+    string::{quotation_pair_escaped, quotation_pair, surround_pair, surround_pair_with_escaper},
 };
 use core::str::pattern::Pattern;
 

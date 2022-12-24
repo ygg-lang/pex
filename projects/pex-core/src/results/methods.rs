@@ -101,9 +101,9 @@ impl<'i, T> ParseResult<'i, T> {
     ///
     /// ```
     /// # use pex::{ParseResult, ParseState};
-    /// # use pex::helpers::{decimal_string, single_quote_string};
+    /// # use pex::helpers::{decimal_string, quotation_pair};
     /// let state = ParseState::new("'hello'");
-    /// assert!(state.match_fn(single_quote_string).is_success());
+    /// assert!(state.match_fn(quotation_pair).is_success());
     /// assert!(!state.match_fn(decimal_string).is_success());
     /// ```
     #[inline(always)]
@@ -119,9 +119,9 @@ impl<'i, T> ParseResult<'i, T> {
     ///
     /// ```
     /// # use pex::{ParseResult, ParseState};
-    /// # use pex::helpers::{decimal_string, single_quote_string};
+    /// # use pex::helpers::{decimal_string, quotation_pair};
     /// let state = ParseState::new("'hello'");
-    /// assert!(!state.match_fn(single_quote_string).is_failure());
+    /// assert!(!state.match_fn(quotation_pair).is_failure());
     /// assert!(state.match_fn(decimal_string).is_failure());
     /// ```
     #[inline(always)]
