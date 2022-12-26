@@ -4,6 +4,7 @@ use core::{
     str::pattern::{Pattern, ReverseSearcher},
 };
 pub mod surround_pair;
+pub mod zero_base_byte;
 
 /// A string pattern with a message for error reporting
 ///
