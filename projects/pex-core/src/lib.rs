@@ -14,6 +14,7 @@ extern crate alloc;
 pub use crate::{
     patterns::{
         surround_pair::{SurroundPair, SurroundPairPattern},
+        zero_base_byte::ZeroBytePattern,
         NamedPattern, StringView,
     },
     results::{CustomError, ParseResult, StopBecause},

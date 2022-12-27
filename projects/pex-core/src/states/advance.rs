@@ -36,26 +36,29 @@ impl<'i> ParseState<'i> {
     where
         T: Into<ParseAdvance>,
     {
-        let offset = match term.into() {
-            ParseAdvance::Offset(v) => v,
-            ParseAdvance::Character(v) => v.len_utf8(),
-            ParseAdvance::String(v) => v.len(),
-        };
-        ParseState {
-            residual: &self.residual[offset..],
-            start_offset: self.start_offset + offset,
-            stop_reason: self.stop_reason,
-        }
+        let offset = term.into().as_offset();
+        debug_assert!(offset <= self.residual.len(), "offset is out of range");
+        let residual = unsafe { self.residual.get_unchecked(offset..) };
+        ParseState { residual, start_offset: self.start_offset + offset, stop_reason: self.stop_reason }
     }
     /// Advance the parser state and return the view of these string.
     #[inline]
     pub fn advance_view(self, offset: usize) -> ParseResult<'i, &'i str> {
-        let view = &self.residual[0..offset];
-        ParseState {
-            residual: &self.residual[offset..],
-            start_offset: self.start_offset + offset,
-            stop_reason: self.stop_reason,
+        debug_assert!(offset <= self.residual.len(), "offset is out of range");
+        let view = unsafe { self.residual.get_unchecked(..offset) };
+        let residual = unsafe { self.residual.get_unchecked(offset..) };
+        ParseState { residual, start_offset: self.start_offset + offset, stop_reason: self.stop_reason }.finish(view)
+    }
+}
+
+impl ParseAdvance {
+    /// Get the offset of the advance.
+    #[inline]
+    pub const fn as_offset(&self) -> usize {
+        match self {
+            ParseAdvance::Offset(v) => *v,
+            ParseAdvance::Character(v) => v.len_utf8(),
+            ParseAdvance::String(v) => v.len(),
         }
-        .finish(view)
     }
 }
