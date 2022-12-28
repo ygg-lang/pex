@@ -25,11 +25,16 @@ impl<'i, T> FromResidual for ParseResult<'i, T> {
     }
 }
 
-impl<'i, T> FromResidual<Result<Infallible, StopBecause>> for ParseResult<'_, T> {
-    fn from_residual(residual: Result<Infallible, StopBecause>) -> Self {
+impl<'i, T, E> FromResidual<Result<Infallible, E>> for ParseResult<'i, T>
+where
+    E: Into<StopBecause>,
+{
+    fn from_residual(residual: Result<Infallible, E>) -> Self {
         match residual {
-            Ok(_) => unreachable!(),
-            Err(e) => Self::Stop(e),
+            Ok(_) => {
+                unreachable!()
+            }
+            Err(e) => Self::Stop(e.into()),
         }
     }
 }

@@ -1,3 +1,5 @@
+use std::convert::Infallible;
+
 use pex::{helpers::decimal_string, ParseResult, ParseState};
 use std::str::FromStr;
 
@@ -9,6 +11,6 @@ fn ready() {
 // decimal = integer (. integer)?
 fn parse_decimal(state: ParseState) -> ParseResult<f64> {
     let (state, a) = decimal_string(state)?;
-    let a = f64::from_str(a)?;
-    state.finish(a)
+    let a = Some(1)?;
+    todo!()
 }
