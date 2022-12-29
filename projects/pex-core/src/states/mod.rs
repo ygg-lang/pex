@@ -10,8 +10,10 @@ use core::{
     slice::SliceIndex,
     str::pattern::{Pattern, Searcher},
 };
+#[cfg(feature = "regex")]
+use regex::Match;
 #[cfg(feature = "regex-automata")]
-use regex_automata::{dfa::regex::Regex, MultiMatch};
+use regex_automata::MultiMatch;
 #[cfg(feature = "ucd-trie")]
 use ucd_trie::TrieSetSlice;
 

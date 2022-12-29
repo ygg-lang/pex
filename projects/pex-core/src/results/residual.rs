@@ -31,10 +31,18 @@ where
 {
     fn from_residual(residual: Result<Infallible, E>) -> Self {
         match residual {
-            Ok(_) => {
-                unreachable!()
-            }
+            Ok(_) => unreachable!(),
+
             Err(e) => Self::Stop(e.into()),
+        }
+    }
+}
+
+impl<'i, T> FromResidual<Option<Infallible>> for ParseResult<'i, T> {
+    fn from_residual(residual: Option<Infallible>) -> Self {
+        match residual {
+            Some(_) => unreachable!(),
+            None => Self::Stop(StopBecause::Uninitialized),
         }
     }
 }

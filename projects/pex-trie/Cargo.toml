@@ -21,7 +21,7 @@ unicode-script = "0.5.5"
 [dev-dependencies.pex]
 version = "0.1.0"
 path = "../pex-core"
-features = ["ucd-trie", "regex-automata"]
+features = ["ucd-trie", "regex", "regex-automata"]
 
 [features]
 default = []

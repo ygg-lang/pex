@@ -95,8 +95,22 @@ impl<'i> ParseState<'i> {
         self.advance_view(s)
     }
     /// Match a string with given regex.
+    #[cfg(feature = "regex")]
+    pub fn match_regex(&self, re: &regex::Regex, message: &'static str) -> ParseResult<'i, Match> {
+        let result = match re.find_at(self.residual, 0) {
+            Some(s) => s,
+            None => StopBecause::missing_string(message, self.start_offset)?,
+        };
+        self.advance(result.end()).finish(result)
+    }
+
+    /// Match a string with given regex.
     #[cfg(feature = "regex-automata")]
-    pub fn match_regex(&self, re: &Regex, message: &'static str) -> ParseResult<'i, MultiMatch> {
+    pub fn match_regex_automata(
+        &self,
+        re: &regex_automata::dfa::regex::Regex,
+        message: &'static str,
+    ) -> ParseResult<'i, MultiMatch> {
         match re.try_find_leftmost(self.residual.as_bytes()) {
             Ok(Some(m)) => {
                 let new = self.advance(m.end());
