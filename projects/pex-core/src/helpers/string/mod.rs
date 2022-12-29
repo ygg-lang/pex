@@ -1,4 +1,4 @@
-use crate::{NamedPattern, StringView};
+use crate::{StringView};
 use super::*;
 
 /// Used to parse matching surround pairs without escaping, often used to match raw strings,
