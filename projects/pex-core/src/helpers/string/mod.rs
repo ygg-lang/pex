@@ -1,5 +1,5 @@
-use crate::{StringView};
 use super::*;
+use crate::StringView;
 
 /// Used to parse matching surround pairs without escaping, often used to match raw strings,
 /// such as `r###"TEXT"###` in rust and `"""TEXT"""` in toml.
@@ -49,10 +49,10 @@ use super::*;
 /// assert_eq!(paired.tail.as_string(), "\"\"\"");
 /// ```
 pub fn surround_pair<'i, S, E>(state: ParseState<'i>, pattern: SurroundPairPattern<S, E>) -> ParseResult<'i, SurroundPair<'i>>
-    where
-        S: Pattern<'static>,
-        E: Pattern<'static>,
-        'i: 'static,
+where
+    S: Pattern<'static>,
+    E: Pattern<'static>,
+    'i: 'static,
 {
     pattern.consume_state(state)
 }

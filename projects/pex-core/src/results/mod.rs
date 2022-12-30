@@ -7,10 +7,10 @@ use core::{
 
 use crate::{ParseState, Parsed};
 
-mod residual;
 mod from_std;
 mod methods;
 mod reason;
+mod residual;
 
 /// Represent as parsing result
 #[derive(Eq, PartialEq)]
