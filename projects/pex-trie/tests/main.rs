@@ -1,4 +1,4 @@
-use pex::ParseState;
+use pex::{BracketPattern, NamedPattern, ParseState};
 use pex_trie::{generate::xid::XID_START, UnicodeSet};
 use regex_automata::dfa::regex::Regex;
 use ucd_trie::TrieSetSlice;
@@ -14,6 +14,20 @@ fn dump_xid_start() {
     println!("{}", xid.export_rust_code().unwrap());
 }
 
+
+#[test]
+fn test() {
+    let pat = BracketPattern {
+        open: NamedPattern { pattern: '[', message: "" },
+        close: NamedPattern { pattern: ']', message: "" },
+        delimiter: NamedPattern { pattern: ',', message: "" },
+        dangling: None,
+    };
+    let text = ParseState::new("[0, ]");
+    let out = pat.consume(text, whitespace, decimal_string).unwrap();
+    println!("{:#?}", out)
+}
+
 pub struct Tree {
     re0: Regex,
 }
@@ -25,6 +39,7 @@ impl Tree {
 }
 
 use ucd_trie::TrieSetOwned;
+use pex::helpers::{decimal_string, whitespace};
 
 pub fn test_trie() {
     let trie = TrieSetOwned::from_codepoints(vec![0x61, 0x62, 0x63]).unwrap();

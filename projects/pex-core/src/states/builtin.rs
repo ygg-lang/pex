@@ -64,7 +64,7 @@ impl<'i> ParseState<'i> {
 impl<'i> ParseState<'i> {
     /// Match a static string pattern.
     #[inline]
-    pub fn match_str_pattern<'a, P>(self, target: P, message: &'static str) -> ParseResult<'i, &'i str>
+    pub fn match_str_pattern<'a, P>(self, target: &P, message: &'static str) -> ParseResult<'i, &'i str>
     where
         P: Pattern<'a>,
         'i: 'a,

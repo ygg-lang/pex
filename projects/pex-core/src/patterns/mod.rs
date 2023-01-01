@@ -6,6 +6,7 @@ use core::{
 };
 pub mod surround_pair;
 pub mod zero_base_byte;
+pub mod bracket_pair;
 
 /// A string pattern with a message for error reporting
 ///
@@ -50,8 +51,7 @@ pub mod zero_base_byte;
 /// ```
 #[derive(Copy, Clone, Debug)]
 pub struct NamedPattern<P>
-where
-    P: Pattern<'static>,
+
 {
     /// The pattern to match
     pub pattern: P,

@@ -62,11 +62,7 @@ pub struct SurroundPair<'i> {
 /// assert_eq!(test.tail.as_string(), "\"\"\"");
 /// ```
 #[derive(Copy, Clone, Debug)]
-pub struct SurroundPairPattern<S, E>
-where
-    S: Pattern<'static>,
-    E: Pattern<'static>,
-{
+pub struct SurroundPairPattern<S, E> {
     /// The length of the pattern
     pub lhs: NamedPattern<S>,
     /// The length of the pattern
@@ -139,11 +135,11 @@ where
     ///     rhs: NamedPattern::new("\"\"\"", "STRING_RAW_RHS"),
     /// };
     /// ```
-    pub fn consume_state<'i>(self, state: ParseState<'i>) -> ParseResult<'i, SurroundPair<'i>>
+    pub fn consume<'i>(self, state: ParseState<'i>) -> ParseResult<'i, SurroundPair<'i>>
     where
         'i: 'static,
     {
-        let (body_state, head) = state.match_str_pattern(self.lhs.pattern, self.lhs.message)?;
+        let (body_state, head) = state.match_str_pattern(&self.lhs.pattern, self.lhs.message)?;
         let lhs = StringView::new(head, state.start_offset);
         let message = self.rhs.message;
         let mut searcher = self.rhs.into_searcher(&body_state.residual);

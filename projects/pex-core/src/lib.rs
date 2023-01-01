@@ -15,6 +15,7 @@ pub use crate::{
     patterns::{
         surround_pair::{SurroundPair, SurroundPairPattern},
         zero_base_byte::ZeroBytePattern,
+        bracket_pair::{BracketPattern, BracketPair},
         NamedPattern, StringView,
     },
     results::{CustomError, ParseResult, StopBecause},
