@@ -92,7 +92,7 @@ impl<'i, T> ParseResult<'i, T> {
     pub fn unwrap(self) -> T {
         match self {
             ParseResult::Pending(_, v) => v,
-            ParseResult::Stop(e) => panic!("{e}"),
+            ParseResult::Stop(e) => panic!("{e:?}"),
         }
     }
     /// Check whether a match is successful, note that an empty match is always successful.
