@@ -54,7 +54,7 @@ where
     E: Pattern<'static>,
     'i: 'static,
 {
-    pattern.consume_state(state)
+    pattern.consume(state)
 }
 
 /// Parse the given state as a single quote string, all characters are allowed in strings except `'`, but including `\'`.

@@ -4,6 +4,7 @@ mod color;
 mod comment;
 mod number;
 mod string;
+mod bracket;
 pub use self::{
     color::hex_color,
     comment::{comment_block, comment_block_nested, comment_line},
