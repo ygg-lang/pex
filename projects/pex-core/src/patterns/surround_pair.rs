@@ -69,10 +69,10 @@ pub struct SurroundPairPattern<S, E> {
     pub rhs: NamedPattern<E>,
 }
 
-impl<S, E> SurroundPairPattern<S, E>
+impl<'p, S, E> SurroundPairPattern<S, E>
 where
-    S: Pattern<'static>,
-    E: Pattern<'static>,
+    S: Pattern<'p>,
+    E: Pattern<'p>,
 {
     /// Used to parse matching surround pairs without escaping, often used to match raw strings,
     /// such as `r###"TEXT"###` in rust and `"""TEXT"""` in toml.
@@ -138,8 +138,9 @@ where
     pub fn consume<'i>(self, state: ParseState<'i>) -> ParseResult<'i, SurroundPair<'i>>
     where
         'i: 'static,
+        'p: 'static,
     {
-        let (body_state, head) = state.match_str_pattern(&self.lhs.pattern, self.lhs.message)?;
+        let (body_state, head) = state.match_str_pattern(self.lhs.pattern, self.lhs.message)?;
         let lhs = StringView::new(head, state.start_offset);
         let message = self.rhs.message;
         let mut searcher = self.rhs.into_searcher(&body_state.residual);

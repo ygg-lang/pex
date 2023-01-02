@@ -2,11 +2,12 @@ use crate::{ParseResult, ParseResult::Pending, ParseState, StopBecause};
 use alloc::{borrow::ToOwned, string::String};
 use core::{
     ops::Range,
-    str::pattern::{Pattern, ReverseSearcher},
+    str::pattern::{Pattern, ReverseSearcher, Searcher},
 };
+
+pub mod bracket_pair;
 pub mod surround_pair;
 pub mod zero_base_byte;
-pub mod bracket_pair;
 
 /// A string pattern with a message for error reporting
 ///
@@ -50,9 +51,7 @@ pub mod bracket_pair;
 /// assert_eq!(test.tail.as_string(), "\"\"\"");
 /// ```
 #[derive(Copy, Clone, Debug)]
-pub struct NamedPattern<P>
-
-{
+pub struct NamedPattern<P> {
     /// The pattern to match
     pub pattern: P,
     /// Error message to display if the pattern is failed to match
@@ -98,13 +97,27 @@ where
     }
 }
 
-impl<P> NamedPattern<P>
+impl<'p, P> NamedPattern<P>
 where
-    P: Pattern<'static>,
+    P: Pattern<'p> + Clone,
 {
     /// Create a new named pattern
     pub fn new(pattern: P, message: &'static str) -> Self {
         Self { pattern, message }
+    }
+
+    pub fn consume<'i>(&'p self, input: ParseState<'i>) -> ParseResult<'i, StringView<'i>>
+    where
+        'i: 'p,
+    {
+        let mut searcher = self.pattern.clone().into_searcher(&input.residual);
+        match searcher.next_match() {
+            Some((0, end)) => {
+                let (state, rest) = input.advance_view(end)?;
+                state.finish(StringView::new(rest, input.start_offset))
+            }
+            _ => StopBecause::missing_string(self.message, input.start_offset)?,
+        }
     }
 }
 /// A string view with range information from the raw string.
