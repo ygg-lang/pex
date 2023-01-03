@@ -9,13 +9,14 @@
 #![doc(html_logo_url = "https://avatars.githubusercontent.com/u/91894079")]
 #![doc(html_favicon_url = "https://avatars.githubusercontent.com/u/91894079")]
 
+#[cfg(feature = "alloc")]
 extern crate alloc;
 
 pub use crate::{
     patterns::{
+        bracket_pair::{BracketPair, BracketPattern},
         surround_pair::{SurroundPair, SurroundPairPattern},
         zero_base_byte::ZeroBytePattern,
-        bracket_pair::{BracketPattern, BracketPair},
         NamedPattern, StringView,
     },
     results::{CustomError, ParseResult, StopBecause},

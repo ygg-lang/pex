@@ -31,9 +31,9 @@ impl Display for StopBecause {
     }
 }
 
-impl Error for CustomError {}
+impl<'i> Error for CustomError<'i> {}
 
-impl Debug for CustomError {
+impl<'i> Debug for CustomError<'i> {
     fn fmt(&self, f: &mut Formatter<'_>) -> core::fmt::Result {
         f.debug_struct("CustomError")
             .field("message", &self.message)
@@ -42,14 +42,14 @@ impl Debug for CustomError {
     }
 }
 
-impl Display for CustomError {
+impl<'i> Display for CustomError<'i> {
     fn fmt(&self, f: &mut Formatter<'_>) -> core::fmt::Result {
         f.write_str(&self.message)
     }
 }
 
-impl From<CustomError> for StopBecause {
-    fn from(value: CustomError) -> Self {
+impl From<CustomError<'static>> for StopBecause {
+    fn from(value: CustomError<'static>) -> Self {
         Self::Custom(value)
     }
 }
@@ -99,7 +99,7 @@ impl StopBecause {
     }
 }
 
-impl CustomError {
+impl<'i> CustomError<'i> {
     /// Create a new [CustomError]
     pub const fn range(&self) -> Range<usize> {
         self.start..self.end

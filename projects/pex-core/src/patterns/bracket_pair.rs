@@ -1,6 +1,5 @@
-use crate::{ ParseResult, ParseState, StringView};
+use crate::{ParseResult, ParseState, StringView};
 use alloc::vec::Vec;
-use core::str::pattern::Pattern;
 
 ///
 #[derive(Copy, Clone, Debug)]
@@ -31,7 +30,19 @@ impl BracketPattern {
     pub fn new(open: &'static str, close: &'static str) -> Self {
         Self { open, close, delimiter: ",", dangling: None }
     }
+    /// Create a new bracket pattern
+    pub fn with_delimiter(mut self, delimiter: &'static str) -> Self {
+        self.delimiter = delimiter;
+        self
+    }
+    /// Create a new bracket pattern
+    pub fn with_dangling(mut self, dangling: bool) -> Self {
+        self.dangling = Some(dangling);
+        self
+    }
+}
 
+impl BracketPattern {
     /// ```js
     /// [ ~ ]
     /// [ ~ term (~ , ~ term)* (~ ,)? ~ ]

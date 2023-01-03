@@ -105,7 +105,7 @@ where
     pub fn new(pattern: P, message: &'static str) -> Self {
         Self { pattern, message }
     }
-
+    /// Consume the pattern from the input
     pub fn consume<'i>(&'p self, input: ParseState<'i>) -> ParseResult<'i, StringView<'i>>
     where
         'i: 'p,

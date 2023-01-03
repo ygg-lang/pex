@@ -78,14 +78,14 @@ pub enum StopBecause {
         position: usize,
     },
     /// A custom error message
-    Custom(CustomError),
+    Custom(CustomError<'static>),
 }
 
 /// A custom error message
 #[derive(Copy, Clone, Eq, PartialEq, Hash)]
-pub struct CustomError {
+pub struct CustomError<'i> {
     /// The error message
-    pub message: &'static str,
+    pub message: &'i str,
     /// The start offset of the location where the error occurred
     pub start: usize,
     /// The end offset of the location where the error occurred
