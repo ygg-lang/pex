@@ -14,15 +14,9 @@ fn dump_xid_start() {
     println!("{}", xid.export_rust_code().unwrap());
 }
 
-
 #[test]
 fn test() {
-    let pat = BracketPattern {
-        open: NamedPattern { pattern: '[', message: "" },
-        close: NamedPattern { pattern: ']', message: "" },
-        delimiter: NamedPattern { pattern: ',', message: "" },
-        dangling: None,
-    };
+    let pat = BracketPattern { open: "[", close: "]", delimiter: ",", dangling: None };
     let text = ParseState::new("[0, ]");
     let out = pat.consume(text, whitespace, decimal_string).unwrap();
     println!("{:#?}", out)
@@ -38,8 +32,8 @@ impl Tree {
     }
 }
 
-use ucd_trie::TrieSetOwned;
 use pex::helpers::{decimal_string, whitespace};
+use ucd_trie::TrieSetOwned;
 
 pub fn test_trie() {
     let trie = TrieSetOwned::from_codepoints(vec![0x61, 0x62, 0x63]).unwrap();

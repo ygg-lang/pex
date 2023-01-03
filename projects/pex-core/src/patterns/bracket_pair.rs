@@ -2,7 +2,8 @@ use crate::{NamedPattern, ParseResult, ParseState, StringView};
 use alloc::vec::Vec;
 use core::str::pattern::Pattern;
 
-#[derive(Clone, Debug)]
+///
+#[derive(Copy, Clone, Debug)]
 pub struct BracketPattern {
     pub open: &'static str,
     pub close: &'static str,
@@ -10,6 +11,7 @@ pub struct BracketPattern {
     pub dangling: Option<bool>,
 }
 
+///
 #[derive(Debug)]
 pub struct BracketPair<'i, T> {
     lhs: StringView<'i>,
@@ -18,6 +20,11 @@ pub struct BracketPair<'i, T> {
 }
 
 impl BracketPattern {
+    /// Create a new bracket pattern
+    pub fn new(open: &'static str, close: &'static str) -> Self {
+        Self { open, close, delimiter: ",", dangling: None }
+    }
+
     /// ```js
     /// [ ~ ]
     /// [ ~ term (~ , ~ term)* (~ ,)? ~ ]
@@ -41,9 +48,13 @@ impl BracketPattern {
     where
         I: Fn(ParseState<'i>) -> ParseResult<'i, U>,
     {
-        let (state, lhs) = input.match_str(self.open)?;
-        let (state, rhs) = input.skip(ignore).match_str(self.close)?;
-        state.finish(BracketPair { lhs: StringView::new(lhs), rhs: StringView::new(rhs), body: Vec::new() })
+        let (s_rhs, lhs) = input.match_str(self.open)?;
+        let (finally, rhs) = s_rhs.skip(ignore).match_str(self.close)?;
+        finally.finish(BracketPair {
+            lhs: StringView::new(lhs, input.start_offset),
+            rhs: StringView::new(rhs, s_rhs.start_offset),
+            body: Vec::new(),
+        })
     }
     /// `[ ~ term (~ , ~ term)* ~ ,? ~ ]`
     fn maybe_many<'i, F, I, T, U>(&self, input: ParseState<'i>, ignore: I, parser: F) -> ParseResult<'i, BracketPair<'i, T>>
@@ -52,24 +63,28 @@ impl BracketPattern {
         I: Fn(ParseState<'i>) -> ParseResult<'i, U>,
     {
         let mut terms = Vec::with_capacity(1);
-        let (state, lhs) = self.open.consume(input)?;
+        let (state, lhs) = input.match_str(self.open)?;
         let (state, first) = state.skip(&ignore).match_fn(&parser)?;
         terms.push(first);
         let (state, _) = state.match_repeats(|s| self.delimiter_term(s, &ignore, &parser, &mut terms))?;
-        let state = match self.dangling {
-            Some(true) => self.delimiter.consume(state.skip(&ignore))?.0,
+        let s_rhs = match self.dangling {
+            Some(true) => state.skip(&ignore).match_str(self.delimiter)?.0,
             Some(false) => state,
-            None => match self.delimiter.consume(state.skip(&ignore)) {
+            None => match state.skip(&ignore).match_str(self.delimiter) {
                 ParseResult::Pending(s, _) => s,
                 ParseResult::Stop(_) => state,
             },
         };
-        let (state, rhs) = self.close.consume(input.skip(&ignore))?;
-        state.finish(BracketPair { lhs, rhs, body: terms })
+        let (finally, rhs) = s_rhs.skip(&ignore).match_str(self.close)?;
+        finally.finish(BracketPair {
+            lhs: StringView::new(lhs, input.start_offset),
+            rhs: StringView::new(rhs, s_rhs.start_offset),
+            body: terms,
+        })
     }
     /// `~ , ~ term`
     fn delimiter_term<'i, 't, F, I, T, U>(
-        self,
+        &self,
         input: ParseState<'i>,
         ignore: I,
         parser: F,
@@ -79,7 +94,7 @@ impl BracketPattern {
         F: Fn(ParseState<'i>) -> ParseResult<'i, T>,
         I: Fn(ParseState<'i>) -> ParseResult<'i, U>,
     {
-        let (state, _) = self.delimiter.consume(input.skip(ignore))?;
+        let (state, _) = input.skip(ignore).match_str(self.delimiter)?;
         let (state, term) = parser(state)?;
         terms.push(term);
         state.finish(())
