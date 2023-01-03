@@ -88,6 +88,7 @@ impl<'i, T> ParseResult<'i, T> {
     /// let result = state.finish(());
     /// assert_eq!(result.as_result(), Ok((state, ())));
     /// ```
+    #[track_caller]
     #[inline(always)]
     pub fn unwrap(self) -> T {
         match self {

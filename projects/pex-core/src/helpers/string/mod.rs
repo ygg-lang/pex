@@ -170,7 +170,7 @@ pub fn quotation_pair_escaped<'i>(state: ParseState<'i>, bound: char) -> ParseRe
 /// assert!(quotation_pair_escaped(escape, '"').is_success());
 /// ```
 pub fn quotation_pair_nested(input: ParseState, delimiter: char) -> ParseResult<SurroundPair> {
-    let (state, bound) = input.match_str_if(|c| c != delimiter, "QUOTE")?;
+    let (state, bound) = input.match_str_if(|c| c == delimiter, "QUOTE")?;
     match bound.len() {
         0 => StopBecause::missing_character(delimiter, input.start_offset)?,
         2 => state.finish(SurroundPair {

@@ -1,22 +1,29 @@
-use crate::{NamedPattern, ParseResult, ParseState, StringView};
+use crate::{ ParseResult, ParseState, StringView};
 use alloc::vec::Vec;
 use core::str::pattern::Pattern;
 
 ///
 #[derive(Copy, Clone, Debug)]
 pub struct BracketPattern {
+    /// The
     pub open: &'static str,
+    ///
     pub close: &'static str,
+    ///
     pub delimiter: &'static str,
+    ///
     pub dangling: Option<bool>,
 }
 
 ///
 #[derive(Debug)]
 pub struct BracketPair<'i, T> {
-    lhs: StringView<'i>,
-    rhs: StringView<'i>,
-    body: Vec<T>,
+    ///
+    pub lhs: StringView<'i>,
+    ///
+    pub rhs: StringView<'i>,
+    ///
+    pub body: Vec<T>,
 }
 
 impl BracketPattern {
@@ -75,6 +82,7 @@ impl BracketPattern {
                 ParseResult::Stop(_) => state,
             },
         };
+
         let (finally, rhs) = s_rhs.skip(&ignore).match_str(self.close)?;
         finally.finish(BracketPair {
             lhs: StringView::new(lhs, input.start_offset),
@@ -94,8 +102,8 @@ impl BracketPattern {
         F: Fn(ParseState<'i>) -> ParseResult<'i, T>,
         I: Fn(ParseState<'i>) -> ParseResult<'i, U>,
     {
-        let (state, _) = input.skip(ignore).match_str(self.delimiter)?;
-        let (state, term) = parser(state)?;
+        let (state, _) = input.skip(&ignore).match_str(self.delimiter)?;
+        let (state, term) = state.skip(&ignore).match_fn(parser)?;
         terms.push(term);
         state.finish(())
     }
