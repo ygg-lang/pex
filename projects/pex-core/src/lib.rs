@@ -31,3 +31,6 @@ mod third_party;
 
 #[cfg(feature = "ucd-trie")]
 pub use ucd_trie::TrieSetSlice;
+
+#[cfg(feature = "regex")]
+pub use regex::Regex;

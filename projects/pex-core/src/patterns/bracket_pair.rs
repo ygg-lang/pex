@@ -1,34 +1,36 @@
 use crate::{ParseResult, ParseState, StringView};
 use alloc::vec::Vec;
 
-///
+/// A bracket pattern like `[]` or `(1, )`
 #[derive(Copy, Clone, Debug)]
 pub struct BracketPattern {
-    /// The
+    /// The open bracket pattern
     pub open: &'static str,
-    ///
+    /// The close bracket pattern
     pub close: &'static str,
-    ///
+    /// The delimiter of the bracket elements
     pub delimiter: &'static str,
-    ///
+    /// Whether the last element can be dangling
     pub dangling: Option<bool>,
+    /// Need add delimiter if there is only one element
+    pub one_tailing: bool,
 }
 
-///
+/// A bracket pair like `[1, 2, 3]`
 #[derive(Debug)]
 pub struct BracketPair<'i, T> {
-    ///
+    /// The left bracket
     pub lhs: StringView<'i>,
-    ///
+    /// The right bracket
     pub rhs: StringView<'i>,
-    ///
+    /// The elements in the bracket
     pub body: Vec<T>,
 }
 
 impl BracketPattern {
     /// Create a new bracket pattern
     pub fn new(open: &'static str, close: &'static str) -> Self {
-        Self { open, close, delimiter: ",", dangling: None }
+        Self { open, close, delimiter: ",", dangling: None, one_tailing: false }
     }
     /// Create a new bracket pattern
     pub fn with_delimiter(mut self, delimiter: &'static str) -> Self {
@@ -38,6 +40,11 @@ impl BracketPattern {
     /// Create a new bracket pattern
     pub fn with_dangling(mut self, dangling: bool) -> Self {
         self.dangling = Some(dangling);
+        self
+    }
+    /// Create a new bracket pattern
+    pub fn with_one_tailing(mut self, one_tailing: bool) -> Self {
+        self.one_tailing = one_tailing;
         self
     }
 }
@@ -56,13 +63,13 @@ impl BracketPattern {
     {
         input
             .begin_choice()
-            .or_else(|s| self.maybe_empty(s, &ignore))
-            .or_else(|s| self.maybe_many(s, &ignore, &parser))
+            .or_else(|s| self.consume_empty(s, &ignore))
+            .or_else(|s| self.consume_many(s, &ignore, &parser))
             .end_choice()
     }
 
     /// `[ ~ ]`
-    fn maybe_empty<'i, I, T, U>(&self, input: ParseState<'i>, ignore: I) -> ParseResult<'i, BracketPair<'i, T>>
+    fn consume_empty<'i, I, T, U>(&self, input: ParseState<'i>, ignore: I) -> ParseResult<'i, BracketPair<'i, T>>
     where
         I: Fn(ParseState<'i>) -> ParseResult<'i, U>,
     {
@@ -75,7 +82,7 @@ impl BracketPattern {
         })
     }
     /// `[ ~ term (~ , ~ term)* ~ ,? ~ ]`
-    fn maybe_many<'i, F, I, T, U>(&self, input: ParseState<'i>, ignore: I, parser: F) -> ParseResult<'i, BracketPair<'i, T>>
+    fn consume_many<'i, F, I, T, U>(&self, input: ParseState<'i>, ignore: I, parser: F) -> ParseResult<'i, BracketPair<'i, T>>
     where
         F: Fn(ParseState<'i>) -> ParseResult<'i, T>,
         I: Fn(ParseState<'i>) -> ParseResult<'i, U>,
@@ -85,15 +92,19 @@ impl BracketPattern {
         let (state, first) = state.skip(&ignore).match_fn(&parser)?;
         terms.push(first);
         let (state, _) = state.match_repeats(|s| self.delimiter_term(s, &ignore, &parser, &mut terms))?;
-        let s_rhs = match self.dangling {
-            Some(true) => state.skip(&ignore).match_str(self.delimiter)?.0,
-            Some(false) => state,
-            None => match state.skip(&ignore).match_str(self.delimiter) {
-                ParseResult::Pending(s, _) => s,
-                ParseResult::Stop(_) => state,
-            },
+        let s_rhs = if self.one_tailing && terms.len() == 1 {
+            state.skip(&ignore).match_str(self.delimiter)?.0
+        }
+        else {
+            match self.dangling {
+                Some(true) => state.skip(&ignore).match_str(self.delimiter)?.0,
+                Some(false) => state,
+                None => match state.skip(&ignore).match_str(self.delimiter) {
+                    ParseResult::Pending(s, _) => s,
+                    ParseResult::Stop(_) => state,
+                },
+            }
         };
-
         let (finally, rhs) = s_rhs.skip(&ignore).match_str(self.close)?;
         finally.finish(BracketPair {
             lhs: StringView::new(lhs, input.start_offset),

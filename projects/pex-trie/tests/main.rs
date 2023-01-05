@@ -1,4 +1,4 @@
-use pex::{BracketPattern, NamedPattern, ParseState};
+use pex::{BracketPattern, ParseState};
 use pex_trie::{generate::xid::XID_START, UnicodeSet};
 use regex_automata::dfa::regex::Regex;
 use ucd_trie::TrieSetSlice;
@@ -16,8 +16,8 @@ fn dump_xid_start() {
 
 #[test]
 fn test() {
-    let pat = BracketPattern { open: "[", close: "]", delimiter: ",", dangling: None };
-    let text = ParseState::new("[0, ]");
+    let pat = BracketPattern::new("(", ")").with_one_tailing(true);
+    let text = ParseState::new("(0,2)");
     let out = pat.consume(text, whitespace, decimal_string).unwrap();
     println!("{:#?}", out)
 }

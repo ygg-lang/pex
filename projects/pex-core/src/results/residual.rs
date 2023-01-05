@@ -32,8 +32,19 @@ where
     fn from_residual(residual: Result<Infallible, E>) -> Self {
         match residual {
             Ok(_) => unreachable!(),
-
             Err(e) => Self::Stop(e.into()),
+        }
+    }
+}
+
+impl<'i, T, E> FromResidual<ParseResult<'i, Infallible>> for Result<T, E>
+where
+    E: From<StopBecause>,
+{
+    fn from_residual(residual: ParseResult<'i, Infallible>) -> Self {
+        match residual {
+            ParseResult::Pending(_, _) => unreachable!(),
+            ParseResult::Stop(e) => Err(E::from(e)),
         }
     }
 }
