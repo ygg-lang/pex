@@ -1,10 +1,10 @@
 #![doc = include_str!("readme.md")]
 use crate::{ParseResult, ParseState, StopBecause, SurroundPair, SurroundPairPattern};
+mod bracket;
 mod color;
 mod comment;
 mod number;
 mod string;
-mod bracket;
 pub use self::{
     color::hex_color,
     comment::{comment_block, comment_block_nested, comment_line},
@@ -45,6 +45,34 @@ pub fn whitespace<'i>(state: ParseState<'i>) -> ParseResult<&'i str> {
         Some(len) => state.advance_view(len),
         None => StopBecause::missing_character(' ', state.start_offset)?,
     }
+}
+
+/// Function form of the str combinator.
+///
+/// # Examples
+///
+/// ```
+/// # use pex::{ParseResult, ParseState, helpers::str};
+/// let state = ParseState::new("  \na");
+/// state.skip(str(" "));
+/// ```
+#[inline]
+pub fn str<'i>(s: &'static str) -> impl Fn(ParseState<'i>) -> ParseResult<'i, &'i str> {
+    move |input: ParseState| input.match_str(s)
+}
+
+/// Function form of the char combinator.
+///
+/// # Examples
+///
+/// ```
+/// # use pex::{ParseResult, ParseState, helpers::char};
+/// let state = ParseState::new("  \na");
+/// state.skip(char(' '));
+/// ```
+#[inline]
+pub fn char<F>(c: char) -> impl Fn(ParseState) -> ParseResult<char> {
+    move |input: ParseState| input.match_char(c)
 }
 
 /// Make the [`from_str`](core::str::FromStr) function from the pex parser
