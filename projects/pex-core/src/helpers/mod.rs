@@ -71,8 +71,25 @@ pub fn str<'i>(s: &'static str) -> impl Fn(ParseState<'i>) -> ParseResult<'i, &'
 /// state.skip(char(' '));
 /// ```
 #[inline]
-pub fn char<F>(c: char) -> impl Fn(ParseState) -> ParseResult<char> {
+pub fn char(c: char) -> impl Fn(ParseState) -> ParseResult<char> {
     move |input: ParseState| input.match_char(c)
+}
+
+/// Function form of the char combinator.
+///
+/// # Examples
+///
+/// ```
+/// # use pex::{ParseResult, ParseState, helpers::{char, omit}};
+/// let state = ParseState::new("  \na");
+/// state.skip(omit(char(' ')));
+/// ```
+#[inline]
+pub fn omit<T, F>(parser: F) -> impl Fn(ParseState) -> ParseResult<()>
+where
+    F: Fn(ParseState) -> ParseResult<T>,
+{
+    move |input: ParseState| parser(input).map_inner(|_| ())
 }
 
 /// Make the [`from_str`](core::str::FromStr) function from the pex parser
