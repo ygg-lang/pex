@@ -11,6 +11,7 @@ pub use self::{
     number::*,
     string::{quotation_pair, quotation_pair_escaped, quotation_pair_nested, surround_pair, surround_pair_with_escaper},
 };
+use crate::ParseResult::{Pending, Stop};
 use core::str::pattern::Pattern;
 
 /// Match ascii whitespace and newlines, fail if empty
@@ -85,11 +86,25 @@ pub fn char(c: char) -> impl Fn(ParseState) -> ParseResult<char> {
 /// state.skip(omit(char(' ')));
 /// ```
 #[inline]
-pub fn omit<T, F>(parser: F) -> impl Fn(ParseState) -> ParseResult<()>
+pub fn omit<T, F>(parse: F) -> impl Fn(ParseState) -> ParseResult<()>
 where
     F: Fn(ParseState) -> ParseResult<T>,
 {
-    move |input: ParseState| parser(input).map_inner(|_| ())
+    move |input: ParseState| parse(input).map_inner(|_| ())
+}
+
+/// Function form of the optional combinator.
+///
+/// # Examples
+#[inline]
+pub fn optional<T, F>(parse: F) -> impl Fn(ParseState) -> ParseResult<Option<T>>
+where
+    F: Fn(ParseState) -> ParseResult<T>,
+{
+    move |input: ParseState| match parse(input) {
+        Pending(state, value) => state.finish(Some(value)),
+        Stop(_) => input.finish(None),
+    }
 }
 
 /// Make the [`from_str`](core::str::FromStr) function from the pex parser
