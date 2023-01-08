@@ -37,6 +37,21 @@ impl<'i, T> ParseResult<'i, T> {
             Self::Stop(reason) => ParseResult::Stop(reason),
         }
     }
+    /// Map inner value into target
+    ///
+    /// ```
+    /// # use pex::{ParseResult, ParseState};
+    /// let state = ParseState::new("hello");
+    /// let result = state.finish(());
+    /// assert_eq!(result.map_inner(|_| 1), ParseResult::Pending(state, 1));
+    /// ```
+    #[inline(always)]
+    pub fn map_into<U>(self) -> ParseResult<'i, U>
+    where
+        T: Into<U>,
+    {
+        self.map_inner(Into::into)
+    }
     /// Dispatch branch events based on the result
     ///
     /// # Examples
