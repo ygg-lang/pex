@@ -45,10 +45,10 @@ pub fn test_trie() {
 
 #[test]
 pub fn test_regex() {
-    let re = Regex::new("[0-9]{4}-[0-9]{2}-[0-9]{2}").unwrap();
+    // let re = Regex::new("[0-9]{4}-[0-9]{2}-[0-9]{2}").unwrap();
     let text = "2018-12-24 2016-10-08";
     let s = ParseState::new(text);
-    let s = s.match_regex_automata(&re, "data");
+    // let s = s.match_regex_automata(&re, "data");
     println!("{:#?}", s)
 }
 

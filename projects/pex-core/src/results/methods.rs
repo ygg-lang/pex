@@ -43,6 +43,21 @@ impl<'i, T> ParseResult<'i, T> {
     /// # use pex::{ParseResult, ParseState};
     /// let state = ParseState::new("hello");
     /// let result = state.finish(());
+    /// assert_eq!(result.map_value(1), ParseResult::Pending(state, 1));
+    /// ```
+    #[inline(always)]
+    pub fn map_value<U>(self, value: U) -> ParseResult<'i, U> {
+        match self {
+            Self::Pending(state, _) => ParseResult::Pending(state, value),
+            Self::Stop(reason) => ParseResult::Stop(reason),
+        }
+    }
+    /// Map inner value into target
+    ///
+    /// ```
+    /// # use pex::{ParseResult, ParseState};
+    /// let state = ParseState::new("hello");
+    /// let result = state.finish(());
     /// assert_eq!(result.map_inner(|_| 1), ParseResult::Pending(state, 1));
     /// ```
     #[inline(always)]

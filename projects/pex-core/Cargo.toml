@@ -1,6 +1,6 @@
 [package]
 name = "pex"
-version = "0.1.17"
+version = "0.1.18"
 authors = ["Aster <192607617@qq.com>"]
 description = "A nightly parser combinator library for Rust."
 homepage = "https://github.com/oovm/pex"
@@ -15,7 +15,6 @@ edition = "2021"
 [dependencies]
 ucd-trie = { version = "0.1.5", optional = true }
 regex = { version = "1.8.1", optional = true }
-regex-automata = { version = "0.2.0", optional = true }
 
 [dev-dependencies]
 
