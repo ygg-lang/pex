@@ -1,4 +1,4 @@
-use crate::{ParseResult, ParseState, StopBecause};
+use crate::{utils::hex2_to_u8, ParseResult, ParseState, StopBecause};
 
 /// Parse color tuple from string
 ///
@@ -20,42 +20,42 @@ pub fn hex_color<'a>(input: ParseState<'a>, start: &'static str) -> ParseResult<
     let color = match hex.as_bytes() {
         // gray
         [gray] => {
-            let c = byte2_to_u8(gray, gray);
+            let c = hex2_to_u8(*gray, *gray).unwrap();
             (c, c, c, 255)
         }
         // gray
         [gray1, gray2] => {
-            let c = byte2_to_u8(gray1, gray2);
+            let c = hex2_to_u8(*gray1, *gray2).unwrap();
             (c, c, c, 255)
         }
         // rgb
         [r, g, b] => {
-            let r = byte2_to_u8(r, r);
-            let g = byte2_to_u8(g, g);
-            let b = byte2_to_u8(b, b);
+            let r = hex2_to_u8(*r, *r).unwrap();
+            let g = hex2_to_u8(*g, *g).unwrap();
+            let b = hex2_to_u8(*b, *b).unwrap();
             (r, g, b, 255)
         }
         // rgba
         [r, g, b, a] => {
-            let r = byte2_to_u8(r, r);
-            let g = byte2_to_u8(g, g);
-            let b = byte2_to_u8(b, b);
-            let a = byte2_to_u8(a, a);
+            let r = hex2_to_u8(*r, *r).unwrap();
+            let g = hex2_to_u8(*g, *g).unwrap();
+            let b = hex2_to_u8(*b, *b).unwrap();
+            let a = hex2_to_u8(*a, *a).unwrap();
             (r, g, b, a)
         }
         // rgb
         [r1, r2, g1, g2, b1, b2] => {
-            let r = byte2_to_u8(r1, r2);
-            let g = byte2_to_u8(g1, g2);
-            let b = byte2_to_u8(b1, b2);
+            let r = hex2_to_u8(*r1, *r2).unwrap();
+            let g = hex2_to_u8(*g1, *g2).unwrap();
+            let b = hex2_to_u8(*b1, *b2).unwrap();
             (r, g, b, 255)
         }
         // rgba
         [r1, r2, g1, g2, b1, b2, a1, a2] => {
-            let r = byte2_to_u8(r1, r2);
-            let g = byte2_to_u8(g1, g2);
-            let b = byte2_to_u8(b1, b2);
-            let a = byte2_to_u8(a1, a2);
+            let r = hex2_to_u8(*r1, *r2).unwrap();
+            let g = hex2_to_u8(*g1, *g2).unwrap();
+            let b = hex2_to_u8(*b1, *b2).unwrap();
+            let a = hex2_to_u8(*a1, *a2).unwrap();
             (r, g, b, a)
         }
         buffer => StopBecause::custom_error(
@@ -65,19 +65,4 @@ pub fn hex_color<'a>(input: ParseState<'a>, start: &'static str) -> ParseResult<
         )?,
     };
     state.advance(hex.len()).finish(color)
-}
-
-#[inline(always)]
-const fn byte2_to_u8(high: &u8, low: &u8) -> u8 {
-    byte_to_u8(*high) << 4 | byte_to_u8(*low)
-}
-
-#[inline(always)]
-const fn byte_to_u8(byte: u8) -> u8 {
-    match byte {
-        b'0'..=b'9' => byte - b'0',
-        b'a'..=b'f' => byte - b'a' + 10,
-        b'A'..=b'F' => byte - b'A' + 10,
-        _ => unreachable!(),
-    }
 }

@@ -1,7 +1,11 @@
-use pex::{BracketPattern, ParseState};
+use pex::{
+    helpers::{decimal_string, whitespace},
+    BracketPattern, ParseResult, ParseState,
+};
 use pex_trie::{generate::xid::XID_START, UnicodeSet};
 use regex_automata::dfa::regex::Regex;
-use ucd_trie::TrieSetSlice;
+use ucd_trie::{TrieSetOwned, TrieSetSlice};
+
 #[test]
 fn ready() {
     println!("it works!")
@@ -32,15 +36,30 @@ impl Tree {
     }
 }
 
-use pex::helpers::{decimal_string, whitespace};
-use ucd_trie::TrieSetOwned;
-
 pub fn test_trie() {
     let trie = TrieSetOwned::from_codepoints(vec![0x61, 0x62, 0x63]).unwrap();
     let text = "abc";
     let s = ParseState::new(text);
     let s = s.match_char_set(trie.as_slice(), "data");
     println!("{:#?}", s)
+}
+
+#[test]
+fn test_unescape() {
+    let out = unescape_u("\\u")(ParseState::new("\\u302C"));
+    println!("{:#?}", out);
+    println!("{:#?}", unescape_us("\\u{ }"));
+    println!("{:#?}", unescape_us("\\u{1}"));
+    println!("{:#?}", unescape_us("\\u{12}"));
+    println!("{:#?}", unescape_us("\\u{123}"));
+    println!("{:#?}", unescape_us("\\u{1234}"));
+    println!("{:#?}", unescape_us("\\u{12345}"));
+    println!("{:#?}", unescape_us("\\u{123456}"));
+    println!("{:#?}", unescape_us("\\u{1234567}"));
+}
+
+fn unescape_us(text: &str) -> ParseResult<char> {
+    pex::helpers::unescape_us("\\u")(ParseState::new(text))
 }
 
 #[test]

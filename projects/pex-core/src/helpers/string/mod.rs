@@ -1,5 +1,5 @@
 use super::*;
-use crate::StringView;
+use crate::utils::hex_to_u8;
 
 /// Used to parse matching surround pairs without escaping, often used to match raw strings,
 /// such as `r###"TEXT"###` in rust and `"""TEXT"""` in toml.
@@ -192,5 +192,74 @@ pub fn quotation_pair_nested(input: ParseState, delimiter: char) -> ParseResult<
                 None => StopBecause::missing_character(delimiter, state.start_offset)?,
             }
         }
+    }
+}
+
+/// Parse the given state as a single quote string, `\u1234`
+///
+///
+/// # Patterns
+///
+/// ```ygg
+/// ""
+/// "TEXT"
+/// "TEXT \" TEXT"
+/// ```
+///
+/// # Examples
+///
+/// ```
+/// # use pex::{helpers::{quotation_pair_escaped}, ParseState};
+/// let normal = ParseState::new(r#""hello""#);
+/// let escape = ParseState::new(r#""hello \" world""#);
+///
+/// assert!(quotation_pair_escaped(normal, '"').is_success());
+/// assert!(quotation_pair_escaped(escape, '"').is_success());
+/// ```
+#[derive(Copy, Clone, Debug)]
+pub struct UnicodeUnescape {
+    pub head: &'static str,
+    pub brace: bool,
+}
+
+impl<'i> FnOnce<(ParseState<'i>,)> for UnicodeUnescape {
+    type Output = ParseResult<'i, char>;
+
+    extern "rust-call" fn call_once(self, (input,): (ParseState<'i>,)) -> Self::Output {
+        let (state, _) = input.match_str(self.head)?;
+        match self.brace {
+            true => unescape_us(state),
+            false => unescape_u(state),
+        }
+    }
+}
+
+fn unescape_u(input: ParseState) -> ParseResult<char> {
+    match input.residual.as_bytes() {
+        [c1, c2, c3, c4] => match hex4_to_char(*c1, *c2, *c3, *c4) {
+            Some(c) => input.advance(4).finish(c),
+            None => StopBecause::custom_error("Invalid unicode escape sequence", input.start_offset, input.start_offset + 4)?,
+        },
+        _ => StopBecause::custom_error("Invalid unicode escape sequence", input.start_offset, input.start_offset + 4)?,
+    }
+}
+
+/// `\u{}, \u{0}, \u{1234}, \u{123456}`
+pub fn unescape_us(input: ParseState) -> ParseResult<char> {
+    let (start, _) = input.match_str_if(|c| c == '{', "BRACE")?;
+    let (state, text) = start.match_str_until(|c| c == '}', "BRACE").map_inner(|s| s.trim())?;
+    if text.len() > 6 {
+        StopBecause::custom_error("Escape characters must be 0-6 characters", start.start_offset, state.start_offset)?
+    }
+    let mut digit: u32 = 0;
+    for byte in text.as_bytes() {
+        match hex_to_u8(*byte) {
+            Some(d) => digit = digit * 16 + d as u32,
+            None => StopBecause::custom_error("Escape characters must in 0-9a-fA-F", start.start_offset, state.start_offset)?,
+        }
+    }
+    match char::from_u32(digit) {
+        Some(c) => state.advance(1).finish(c),
+        None => StopBecause::custom_error("Characters must not beyond U+10FFFF", start.start_offset, state.start_offset)?,
     }
 }

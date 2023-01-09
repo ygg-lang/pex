@@ -9,9 +9,16 @@ pub use self::{
     color::hex_color,
     comment::{comment_block, comment_block_nested, comment_line},
     number::*,
-    string::{quotation_pair, quotation_pair_escaped, quotation_pair_nested, surround_pair, surround_pair_with_escaper},
+    string::{
+        quotation_pair, quotation_pair_escaped, quotation_pair_nested, surround_pair, surround_pair_with_escaper, unescape_us,
+        UnicodeUnescape,
+    },
 };
-use crate::ParseResult::{Pending, Stop};
+use crate::{
+    utils::hex4_to_char,
+    ParseResult::{Pending, Stop},
+    StringView,
+};
 use core::str::pattern::Pattern;
 
 /// Match ascii whitespace and newlines, fail if empty
