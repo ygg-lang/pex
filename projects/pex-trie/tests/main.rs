@@ -1,5 +1,5 @@
 use pex::{
-    helpers::{decimal_string, whitespace},
+    helpers::{decimal_string, whitespace, UnicodeUnescape},
     BracketPattern, ParseResult, ParseState,
 };
 use pex_trie::{generate::xid::XID_START, UnicodeSet};
@@ -46,8 +46,6 @@ pub fn test_trie() {
 
 #[test]
 fn test_unescape() {
-    let out = unescape_u("\\u")(ParseState::new("\\u302C"));
-    println!("{:#?}", out);
     println!("{:#?}", unescape_us("\\u{ }"));
     println!("{:#?}", unescape_us("\\u{1}"));
     println!("{:#?}", unescape_us("\\u{12}"));
@@ -59,7 +57,8 @@ fn test_unescape() {
 }
 
 fn unescape_us(text: &str) -> ParseResult<char> {
-    pex::helpers::unescape_us("\\u")(ParseState::new(text))
+    let un = UnicodeUnescape { head: "\\u", insensitive: false, brace: true };
+    un(ParseState::new(text))
 }
 
 #[test]

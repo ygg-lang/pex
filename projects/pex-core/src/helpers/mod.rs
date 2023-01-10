@@ -7,7 +7,7 @@ mod number;
 mod string;
 pub use self::{
     color::hex_color,
-    comment::{comment_block, comment_block_nested, comment_line},
+    comment::{CommentBlock, CommentLine},
     number::*,
     string::{
         quotation_pair, quotation_pair_escaped, quotation_pair_nested, surround_pair, surround_pair_with_escaper, unescape_us,

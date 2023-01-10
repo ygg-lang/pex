@@ -218,13 +218,23 @@ pub fn quotation_pair_nested(input: ParseState, delimiter: char) -> ParseResult<
 /// ```
 #[derive(Copy, Clone, Debug)]
 pub struct UnicodeUnescape {
+    /// The head of the string, e.g. `\\u`
     pub head: &'static str,
+    /// Whether the string is insensitive to case
+    pub insensitive: bool,
+    /// Whether the string is surrounded by braces, e.g. `\\u{1234}`
     pub brace: bool,
+}
+
+impl Default for UnicodeUnescape {
+    fn default() -> Self {
+        Self { head: "\\u", insensitive: false, brace: true }
+    }
 }
 
 impl<'i> FnOnce<(ParseState<'i>,)> for UnicodeUnescape {
     type Output = ParseResult<'i, char>;
-
+    #[inline]
     extern "rust-call" fn call_once(self, (input,): (ParseState<'i>,)) -> Self::Output {
         let (state, _) = input.match_str(self.head)?;
         match self.brace {
@@ -234,6 +244,7 @@ impl<'i> FnOnce<(ParseState<'i>,)> for UnicodeUnescape {
     }
 }
 
+/// `\u1234`
 fn unescape_u(input: ParseState) -> ParseResult<char> {
     match input.residual.as_bytes() {
         [c1, c2, c3, c4] => match hex4_to_char(*c1, *c2, *c3, *c4) {
