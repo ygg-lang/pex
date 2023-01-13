@@ -42,12 +42,6 @@ impl<'i> ParseState<'i> {
     pub fn match_char_any(self) -> ParseResult<'i, char> {
         self.match_char_if(|_| true, "ANY")
     }
-    /// Match a character with given set.
-    #[inline]
-    #[cfg(feature = "ucd-trie")]
-    pub fn match_char_set(self, set: TrieSetSlice, message: &'static str) -> ParseResult<'i, char> {
-        self.match_char_if(|c| set.contains_char(c), message)
-    }
     /// Parsing a character with given rule.
     #[inline]
     pub fn match_char_if<F>(self, predicate: F, message: &'static str) -> ParseResult<'i, char>

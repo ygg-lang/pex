@@ -13,7 +13,7 @@ license = "MPL-2.0"
 edition = "2021"
 
 [dependencies]
-ucd-trie = { version = "0.1.5", optional = true }
+#ucd-trie = { version = "0.1.5", optional = true }
 regex = { version = "1.8.1", optional = true }
 
 [dev-dependencies]

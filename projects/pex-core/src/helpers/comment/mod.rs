@@ -22,8 +22,7 @@ use crate::StringView;
 /// ```
 #[derive(Clone, Copy, Debug)]
 pub struct CommentLine {
-    /// The comment head
-    pub head: &'static str,
+    head: &'static str,
 }
 
 impl CommentLine {
@@ -64,20 +63,31 @@ impl<'i> FnOnce<(ParseState<'i>,)> for CommentLine {
 /// # Examples
 ///
 /// ```
-/// # use pex::{helpers::comment_block, ParseState};
+/// # use pex::{helpers::CommentBlock, ParseState};
 /// let test1 = ParseState::new("(*  comment  *) 123456");
 /// let test2 = ParseState::new("/** comment **/ 123456");
-/// assert_eq!(comment_block(test1, "(*", "*)").unwrap().body.as_string(), "  comment  ");
-/// assert_eq!(comment_block(test2, "/*", "*/").unwrap().body.as_string(), "* comment *");
+/// assert_eq!(CommentBlock::new("(*", "*)")(test1).unwrap().body.as_string(), "  comment  ");
+/// assert_eq!(CommentBlock::new("/*", "*/")(test2).unwrap().body.as_string(), "* comment *");
 /// ```
 #[derive(Clone, Copy, Debug)]
 pub struct CommentBlock {
     /// The comment head
-    pub head: &'static str,
+    head: &'static str,
     /// The comment tail
-    pub tail: &'static str,
+    tail: &'static str,
     /// Whether the comment is nested
-    pub nested: bool,
+    nested: bool,
+}
+
+impl CommentBlock {
+    /// Create a new comment block parser
+    pub fn new(head: &'static str, tail: &'static str) -> Self {
+        Self { head, tail, nested: true }
+    }
+    /// Set whether the comment is nested
+    pub fn with_nested(self, nested: bool) -> Self {
+        Self { nested, ..self }
+    }
 }
 
 impl<'i> FnOnce<(ParseState<'i>,)> for CommentBlock {

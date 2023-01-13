@@ -5,14 +5,16 @@ mod color;
 mod comment;
 mod number;
 mod string;
+mod trie_set;
 pub use self::{
-    color::hex_color,
+    color::HexColor,
     comment::{CommentBlock, CommentLine},
     number::*,
     string::{
         quotation_pair, quotation_pair_escaped, quotation_pair_nested, surround_pair, surround_pair_with_escaper, unescape_us,
         UnicodeUnescape,
     },
+    trie_set::CharactersTrie,
 };
 use crate::{
     utils::hex4_to_char,
