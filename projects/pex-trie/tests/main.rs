@@ -1,5 +1,5 @@
 use pex::{
-    helpers::{decimal_string, whitespace, UnicodeUnescape},
+    helpers::{decimal_string, optional, whitespace, CharactersTrie, UnicodeUnescape},
     BracketPattern, ParseResult, ParseState,
 };
 use pex_trie::{generate::xid::XID_START, UnicodeSet};
@@ -36,12 +36,13 @@ impl Tree {
     }
 }
 
+#[test]
 pub fn test_trie() {
-    let trie = TrieSetOwned::from_codepoints(vec![0x61, 0x62, 0x63]).unwrap();
-    let text = "abc";
-    let s = ParseState::new(text);
-    let s = s.match_char_set(trie.as_slice(), "data");
-    println!("{:#?}", s)
+    let input = ParseState::new("abc123");
+    let o = XID_START_TRIE(input);
+    println!("{:#?}", o);
+    let o = optional(XID_START_TRIE)(input);
+    println!("{:#?}", o);
 }
 
 #[test]
@@ -57,8 +58,8 @@ fn test_unescape() {
 }
 
 fn unescape_us(text: &str) -> ParseResult<char> {
-    let un = UnicodeUnescape { head: "\\u", insensitive: false, brace: true };
-    un(ParseState::new(text))
+    let u_esc = UnicodeUnescape::default();
+    u_esc(ParseState::new(text))
 }
 
 #[test]
@@ -71,7 +72,8 @@ pub fn test_regex() {
 }
 
 #[rustfmt::skip]
-pub const XID_START_TRIE: TrieSetSlice<'static> = TrieSetSlice {
+pub const XID_START_TRIE: CharactersTrie = CharactersTrie {
+    set_name: "XID_START",
     tree1_level1: &[
         0, 576460743847706622, 297241973452963840, 18410715276682199039, 18446744073709551615, 18446744073709551615, 18446744073709551615, 18446744073709551615,
         18446744073709551615, 18446744073709551615, 18446744073709551615, 88094074470339, 0, 13321366222785216512, 18446744056529672000, 18428729675200069631,

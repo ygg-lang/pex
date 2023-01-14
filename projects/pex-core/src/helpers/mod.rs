@@ -1,27 +1,30 @@
 #![doc = include_str!("readme.md")]
-use crate::{ParseResult, ParseState, StopBecause, SurroundPair, SurroundPairPattern};
+use crate::{ParseResult, ParseState, StopBecause};
 mod bracket;
 mod color;
 mod comment;
 mod number;
 mod string;
+mod surround_pair;
 mod trie_set;
+mod zero_base_byte;
+
 pub use self::{
     color::HexColor,
     comment::{CommentBlock, CommentLine},
     number::*,
     string::{
-        quotation_pair, quotation_pair_escaped, quotation_pair_nested, surround_pair, surround_pair_with_escaper, unescape_us,
-        UnicodeUnescape,
+        quotation_pair, quotation_pair_escaped, quotation_pair_nested, surround_pair_with_escaper, unescape_us, UnicodeUnescape,
     },
+    surround_pair::{SurroundPair, SurroundPattern},
     trie_set::CharactersTrie,
+    zero_base_byte::ZeroBytePattern,
 };
 use crate::{
     utils::hex4_to_char,
     ParseResult::{Pending, Stop},
     StringView,
 };
-use core::str::pattern::Pattern;
 
 /// Match ascii whitespace and newlines, fail if empty
 ///
@@ -105,12 +108,18 @@ where
 /// Function form of the optional combinator.
 ///
 /// # Examples
+///
+/// ```
+/// # use pex::{ParseResult, ParseState, helpers::{char, optional}};
+/// let state = ParseState::new("  \na");
+/// state.skip(optional(char('a')));
+/// ```
 #[inline]
-pub fn optional<T, F>(parse: F) -> impl Fn(ParseState) -> ParseResult<Option<T>>
+pub fn optional<T, F>(parser: F) -> impl Fn(ParseState) -> ParseResult<Option<T>>
 where
     F: Fn(ParseState) -> ParseResult<T>,
 {
-    move |input: ParseState| match parse(input) {
+    move |input: ParseState| match parser(input) {
         Pending(state, value) => state.finish(Some(value)),
         Stop(_) => input.finish(None),
     }
@@ -145,8 +154,8 @@ where
     F: FnOnce(ParseState) -> ParseResult<T>,
 {
     match parser(state) {
-        ParseResult::Pending(state, compound) if state.is_empty() => Ok(compound),
-        ParseResult::Pending(state, ..) => Err(StopBecause::ExpectEOF { position: state.start_offset }),
-        ParseResult::Stop(e) => Err(e),
+        Pending(state, compound) if state.is_empty() => Ok(compound),
+        Pending(state, ..) => Err(StopBecause::ExpectEOF { position: state.start_offset }),
+        Stop(e) => Err(e),
     }
 }

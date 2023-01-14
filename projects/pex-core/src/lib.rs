@@ -16,8 +16,6 @@ extern crate alloc;
 pub use crate::{
     patterns::{
         bracket_pair::{BracketPair, BracketPattern},
-        surround_pair::{SurroundPair, SurroundPairPattern},
-        zero_base_byte::ZeroBytePattern,
         NamedPattern, StringView,
     },
     results::{CustomError, ParseResult, StopBecause},
@@ -30,9 +28,6 @@ mod results;
 mod states;
 mod third_party;
 mod utils;
-
-#[cfg(feature = "ucd-trie")]
-pub use ucd_trie::TrieSetSlice;
 
 #[cfg(feature = "regex")]
 pub use regex::Regex;

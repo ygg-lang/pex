@@ -7,21 +7,36 @@ use super::*;
 /// # Examples
 ///
 /// ```
-/// # use pex::{ParseState, ZeroBytePattern};
+/// # use pex::{ParseState, helpers::ZeroBytePattern};
 /// let lower = ParseState::new("0x1234");
 /// let upper = ParseState::new("0X1234");
 /// let bytes = ZeroBytePattern::new(&[("0x", 16), ("0o", 8), ("0b", 2)]);
-/// assert!(bytes.match_pattern(lower).is_success());
-/// assert!(bytes.match_pattern(upper).is_failure());
+/// assert!(bytes(lower).is_success());
+/// assert!(bytes(upper).is_failure());
 /// let bytes = bytes.with_insensitive(true);
-/// assert!(bytes.match_pattern(lower).is_success());
-/// assert!(bytes.match_pattern(upper).is_success());
+/// assert!(bytes(lower).is_success());
+/// assert!(bytes(upper).is_success());
 /// ```
 #[derive(Copy, Clone, Debug)]
 pub struct ZeroBytePattern {
     insensitive: bool,
     marks: &'static [(&'static str, u32)],
     message: &'static str,
+}
+
+impl<'i> FnOnce<(ParseState<'i>,)> for ZeroBytePattern {
+    type Output = ParseResult<'i, (u32, &'i str)>;
+    /// Create a new `ZeroBytePattern` with a leading character and a list of marks.
+    #[inline]
+    extern "rust-call" fn call_once(self, (input,): (ParseState<'i>,)) -> Self::Output {
+        for (mark, base) in self.marks {
+            match Self::parse_byte_base(input, *mark, *base, self.insensitive) {
+                Pending(s, v) => return s.finish(v),
+                _ => continue,
+            }
+        }
+        StopBecause::missing_character_set(self.message, input.start_offset)?
+    }
 }
 
 impl ZeroBytePattern {
@@ -38,21 +53,11 @@ impl ZeroBytePattern {
         Self { message, ..self }
     }
     /// Create a new `ZeroBytePattern` with a leading character and a list of marks.
-    pub fn match_pattern<'i>(&self, state: ParseState<'i>) -> ParseResult<'i, (u32, &'i str)> {
-        for (mark, base) in self.marks {
-            match Self::parse_byte_base(state, *mark, *base, self.insensitive) {
-                Pending(s, v) => return s.finish(v),
-                _ => continue,
-            }
-        }
-        StopBecause::missing_character_set(self.message, state.start_offset)?
-    }
-    /// Create a new `ZeroBytePattern` with a leading character and a list of marks.
     ///
     /// # Examples
     ///
     /// ```
-    /// # use pex::{ParseState, ZeroBytePattern};
+    /// # use pex::{ParseState, helpers::ZeroBytePattern};
     /// let lower = ParseState::new("0x1234");
     /// assert!(ZeroBytePattern::parse_byte_base(lower, "0X", 16, false).is_failure());
     /// assert!(ZeroBytePattern::parse_byte_base(lower, "0X", 16, true).is_success());

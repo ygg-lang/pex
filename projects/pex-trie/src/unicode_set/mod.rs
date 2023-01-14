@@ -4,7 +4,6 @@ use std::{
     fmt::{Debug, Display, Formatter, Write},
 };
 use ucd_trie::TrieSetOwned;
-
 /// A unicode character set
 pub struct UnicodeSet {
     name: String,

@@ -1,4 +1,4 @@
-use crate::{ParseResult, ParseResult::Pending, ParseState, StopBecause};
+use crate::{ParseResult, ParseState, StopBecause};
 use alloc::{borrow::ToOwned, string::String};
 use core::{
     ops::Range,
@@ -6,8 +6,6 @@ use core::{
 };
 
 pub mod bracket_pair;
-pub mod surround_pair;
-pub mod zero_base_byte;
 
 /// A string pattern with a message for error reporting
 ///
@@ -24,8 +22,8 @@ pub mod zero_base_byte;
 /// - match `` `1234` ``
 ///
 /// ```
-/// # use pex::{helpers::surround_pair, NamedPattern, ParseState, SurroundPairPattern};
-/// let quoted_str = SurroundPairPattern {
+/// # use pex::{helpers::surround_pair, NamedPattern, ParseState, SurroundPattern};
+/// let quoted_str = SurroundPattern {
 ///     lhs: NamedPattern::new('`', "STRING_LHS"),
 ///     rhs: NamedPattern::new('`', "STRING_RHS"),
 /// };
@@ -39,8 +37,8 @@ pub mod zero_base_byte;
 /// - match `"""1234"""`
 ///
 /// ```
-/// # use pex::{helpers::surround_pair, NamedPattern, ParseState, SurroundPairPattern};
-/// let raw_str = SurroundPairPattern {
+/// # use pex::{helpers::surround_pair, NamedPattern, ParseState, SurroundPattern};
+/// let raw_str = SurroundPattern {
 ///     lhs: NamedPattern::new("\"\"\"", "STRING_RAW_LHS"),
 ///     rhs: NamedPattern::new("\"\"\"", "STRING_RAW_RHS"),
 /// };
@@ -126,8 +124,8 @@ where
 /// # Examples
 ///
 /// ```
-/// # use pex::{helpers::surround_pair, NamedPattern, ParseState, SurroundPairPattern};
-/// let quoted_str = SurroundPairPattern {
+/// # use pex::{helpers::surround_pair, NamedPattern, ParseState, SurroundPattern};
+/// let quoted_str = SurroundPattern {
 ///     lhs: NamedPattern::new('`', "STRING_LHS"),
 ///     rhs: NamedPattern::new('`', "STRING_RHS"),
 /// };

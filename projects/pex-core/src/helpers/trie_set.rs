@@ -34,6 +34,20 @@ impl<'i> FnOnce<(ParseState<'i>,)> for CharactersTrie {
     }
 }
 
+impl<'i> FnMut<(ParseState<'i>,)> for CharactersTrie {
+    #[inline]
+    extern "rust-call" fn call_mut(&mut self, (input,): (ParseState<'i>,)) -> Self::Output {
+        FnOnce::call_once(*self, (input,))
+    }
+}
+
+impl<'i> Fn<(ParseState<'i>,)> for CharactersTrie {
+    #[inline]
+    extern "rust-call" fn call(&self, (input,): (ParseState<'i>,)) -> Self::Output {
+        FnOnce::call_once(*self, (input,))
+    }
+}
+
 const CHUNK_SIZE: usize = 64;
 
 impl CharactersTrie {

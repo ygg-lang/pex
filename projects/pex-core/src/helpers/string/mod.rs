@@ -1,62 +1,6 @@
 use super::*;
 use crate::utils::hex_to_u8;
 
-/// Used to parse matching surround pairs without escaping, often used to match raw strings,
-/// such as `r###"TEXT"###` in rust and `"""TEXT"""` in toml.
-///
-/// For interpolated strings, it is recommended to use staged parsing, first match the original string,
-/// then match the interpolation, [SurroundPair] contains the starting position information
-///
-/// # Patterns
-///
-/// ```ygg
-/// `TEXT`
-/// """TEXT"""
-/// r#"TEXT"#
-/// r##"TEXT"##
-/// r###"TEXT"###
-/// ```
-///
-/// # Examples
-///
-/// - match `` `1234` ``
-///
-/// ```
-/// # use pex::{helpers::surround_pair, NamedPattern, ParseState, SurroundPairPattern};
-/// let quoted_str = SurroundPairPattern {
-///     lhs: NamedPattern::new('`', "STRING_LHS"),
-///     rhs: NamedPattern::new('`', "STRING_RHS"),
-/// };
-/// let test =
-///     surround_pair(ParseState::new(r#"`12{x}34`rest text"#), quoted_str).as_result().unwrap().1;
-/// assert_eq!(test.head.as_string(), "`");
-/// assert_eq!(test.body.as_string(), "12{x}34");
-/// assert_eq!(test.tail.as_string(), "`");
-/// ```
-///
-/// - match `"""1234"""`
-///
-/// ```
-/// # use pex::{helpers::surround_pair, NamedPattern, ParseState, SurroundPairPattern};
-/// let raw_str = SurroundPairPattern {
-///     lhs: NamedPattern::new("\"\"\"", "STRING_RAW_LHS"),
-///     rhs: NamedPattern::new("\"\"\"", "STRING_RAW_RHS"),
-/// };
-/// let state = ParseState::new(r#""""1234"""rest text"#);
-/// let paired = surround_pair(state, raw_str).as_result().unwrap().1;
-/// assert_eq!(paired.head.as_string(), "\"\"\"");
-/// assert_eq!(paired.body.as_string(), "1234");
-/// assert_eq!(paired.tail.as_string(), "\"\"\"");
-/// ```
-pub fn surround_pair<'i, S, E>(state: ParseState<'i>, pattern: SurroundPairPattern<S, E>) -> ParseResult<'i, SurroundPair<'i>>
-where
-    S: Pattern<'static>,
-    E: Pattern<'static>,
-    'i: 'static,
-{
-    pattern.consume(state)
-}
-
 /// Parse the given state as a single quote string, all characters are allowed in strings except `'`, but including `\'`.
 ///
 /// # Examples
@@ -218,17 +162,15 @@ pub fn quotation_pair_nested(input: ParseState, delimiter: char) -> ParseResult<
 /// ```
 #[derive(Copy, Clone, Debug)]
 pub struct UnicodeUnescape {
-    /// The head of the string, e.g. `\\u`
-    pub head: &'static str,
     /// Whether the string is insensitive to case
     pub insensitive: bool,
     /// Whether the string is surrounded by braces, e.g. `\\u{1234}`
-    pub brace: bool,
+    pub curly_brace: bool,
 }
 
 impl Default for UnicodeUnescape {
     fn default() -> Self {
-        Self { head: "\\u", insensitive: false, brace: true }
+        Self { insensitive: false, curly_brace: true }
     }
 }
 
@@ -236,8 +178,11 @@ impl<'i> FnOnce<(ParseState<'i>,)> for UnicodeUnescape {
     type Output = ParseResult<'i, char>;
     #[inline]
     extern "rust-call" fn call_once(self, (input,): (ParseState<'i>,)) -> Self::Output {
-        let (state, _) = input.match_str(self.head)?;
-        match self.brace {
+        let (state, _) = match self.insensitive {
+            true => input.match_str_insensitive("\\u"),
+            false => input.match_str("\\u"),
+        }?;
+        match self.curly_brace {
             true => unescape_us(state),
             false => unescape_u(state),
         }
