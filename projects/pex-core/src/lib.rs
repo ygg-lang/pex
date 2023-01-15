@@ -20,6 +20,7 @@ pub use crate::{
     },
     results::{CustomError, ParseResult, StopBecause},
     states::{advance::ParseAdvance, choice::ChoiceHelper, ParseState, Parsed},
+    traits::PexNode,
 };
 
 pub mod helpers;
@@ -27,6 +28,7 @@ mod patterns;
 mod results;
 mod states;
 mod third_party;
+mod traits;
 mod utils;
 
 #[cfg(feature = "regex")]
