@@ -75,14 +75,14 @@ pub struct CommentBlock {
     head: &'static str,
     /// The comment tail
     tail: &'static str,
-    /// Whether the comment is nested
+    /// Whether the comment allow nest
     nested: bool,
 }
 
 impl CommentBlock {
     /// Create a new comment block parser
     pub fn new(head: &'static str, tail: &'static str) -> Self {
-        Self { head, tail, nested: true }
+        Self { head, tail, nested: false }
     }
     /// Set whether the comment is nested
     pub fn with_nested(self, nested: bool) -> Self {
@@ -104,7 +104,7 @@ impl<'i> FnOnce<(ParseState<'i>,)> for CommentBlock {
                     Some(s) => {
                         let offset = s + self.tail.len();
                         // SAFETY: find offset always valid
-                        let body = unsafe { state.residual.get_unchecked(self.head.len()..s) };
+                        let body = unsafe { state.residual.get_unchecked(0..s) };
                         state.advance(offset).finish(SurroundPair {
                             head: StringView::new(self.head, input.start_offset),
                             body: StringView::new(body, input.start_offset + self.head.len()),
@@ -115,5 +115,17 @@ impl<'i> FnOnce<(ParseState<'i>,)> for CommentBlock {
                 }
             }
         }
+    }
+}
+
+impl<'i> FnMut<(ParseState<'i>,)> for CommentBlock {
+    extern "rust-call" fn call_mut(&mut self, args: (ParseState<'i>,)) -> Self::Output {
+        FnOnce::call_once(*self, args)
+    }
+}
+
+impl<'i> Fn<(ParseState<'i>,)> for CommentBlock {
+    extern "rust-call" fn call(&self, args: (ParseState<'i>,)) -> Self::Output {
+        FnOnce::call_once(*self, args)
     }
 }

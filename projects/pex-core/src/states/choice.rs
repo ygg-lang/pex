@@ -25,12 +25,12 @@ impl<'a, T> ChoiceHelper<'a, T> {
     }
     /// Try to parse a value
     #[inline]
-    pub fn or_else<F>(mut self, parse_fn: F) -> Self
+    pub fn or_else<F>(mut self, mut parse: F) -> Self
     where
-        F: Fn(ParseState<'a>) -> ParseResult<'a, T>,
+        F: FnMut(ParseState<'a>) -> ParseResult<'a, T>,
     {
         if self.result.is_none() {
-            match parse_fn(self.state.clone()) {
+            match parse(self.state.clone()) {
                 Pending(s, v) => self.result = Some((s, v)),
                 Stop(err) => self.state.set_error(err),
             }

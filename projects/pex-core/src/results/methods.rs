@@ -28,9 +28,9 @@ impl<'i, T> ParseResult<'i, T> {
     /// assert_eq!(result.map_inner(|_| 1), ParseResult::Pending(state, 1));
     /// ```
     #[inline(always)]
-    pub fn map_inner<F, U>(self, f: F) -> ParseResult<'i, U>
+    pub fn map_inner<F, U>(self, mut f: F) -> ParseResult<'i, U>
     where
-        F: FnOnce(T) -> U,
+        F: FnMut(T) -> U,
     {
         match self {
             Self::Pending(state, value) => ParseResult::Pending(state, f(value)),
@@ -78,10 +78,10 @@ impl<'i, T> ParseResult<'i, T> {
     /// result.dispatch(|ok| println!("ok: {:?}", ok), |fail| println!("fail: {:?}", fail));
     /// ```
     #[inline(always)]
-    pub fn dispatch<F, G>(self, ok: F, fail: G) -> Self
+    pub fn dispatch<F, G>(self, mut ok: F, mut fail: G) -> Self
     where
-        F: FnOnce(ParseState),
-        G: FnOnce(StopBecause),
+        F: FnMut(ParseState),
+        G: FnMut(StopBecause),
     {
         match &self {
             ParseResult::Pending(data, _) => ok(*data),

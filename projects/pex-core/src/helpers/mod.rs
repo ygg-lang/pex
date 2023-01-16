@@ -98,9 +98,9 @@ pub fn char(c: char) -> impl Fn(ParseState) -> ParseResult<char> {
 /// state.skip(omit(char(' ')));
 /// ```
 #[inline]
-pub fn omit<T, F>(parse: F) -> impl Fn(ParseState) -> ParseResult<()>
+pub fn omit<T, F>(mut parse: F) -> impl FnMut(ParseState) -> ParseResult<()>
 where
-    F: Fn(ParseState) -> ParseResult<T>,
+    F: FnMut(ParseState) -> ParseResult<T>,
 {
     move |input: ParseState| parse(input).map_inner(|_| ())
 }
@@ -115,11 +115,11 @@ where
 /// state.skip(optional(char('a')));
 /// ```
 #[inline]
-pub fn optional<T, F>(parser: F) -> impl Fn(ParseState) -> ParseResult<Option<T>>
+pub fn optional<T, F>(mut parse: F) -> impl FnMut(ParseState) -> ParseResult<Option<T>>
 where
-    F: Fn(ParseState) -> ParseResult<T>,
+    F: FnMut(ParseState) -> ParseResult<T>,
 {
-    move |input: ParseState| match parser(input) {
+    move |input: ParseState| match parse(input) {
         Pending(state, value) => state.finish(Some(value)),
         Stop(_) => input.finish(None),
     }
@@ -149,9 +149,9 @@ where
 /// }
 /// ```
 #[inline]
-pub fn make_from_str<T, F>(state: ParseState, parser: F) -> Result<T, StopBecause>
+pub fn make_from_str<T, F>(state: ParseState, mut parser: F) -> Result<T, StopBecause>
 where
-    F: FnOnce(ParseState) -> ParseResult<T>,
+    F: FnMut(ParseState) -> ParseResult<T>,
 {
     match parser(state) {
         Pending(state, compound) if state.is_empty() => Ok(compound),

@@ -58,20 +58,20 @@ impl BracketPattern {
     /// ```
     pub fn consume<'i, F, I, T, U>(&self, input: ParseState<'i>, ignore: I, parser: F) -> ParseResult<'i, BracketPair<'i, T>>
     where
-        F: Fn(ParseState<'i>) -> ParseResult<'i, T>,
-        I: Fn(ParseState<'i>) -> ParseResult<'i, U>,
+        F: FnMut(ParseState<'i>) -> ParseResult<'i, T> + Copy,
+        I: FnMut(ParseState<'i>) -> ParseResult<'i, U> + Copy,
     {
         input
             .begin_choice()
-            .or_else(|s| self.consume_empty(s, &ignore))
-            .or_else(|s| self.consume_many(s, &ignore, &parser))
+            .or_else(|s| self.consume_empty(s, ignore))
+            .or_else(|s| self.consume_many(s, ignore, parser))
             .end_choice()
     }
 
     /// `[ ~ ]`
     fn consume_empty<'i, I, T, U>(&self, input: ParseState<'i>, ignore: I) -> ParseResult<'i, BracketPair<'i, T>>
     where
-        I: Fn(ParseState<'i>) -> ParseResult<'i, U>,
+        I: FnMut(ParseState<'i>) -> ParseResult<'i, U>,
     {
         let (s_rhs, lhs) = input.match_str(self.open)?;
         let (finally, rhs) = s_rhs.skip(ignore).match_str(self.close)?;
@@ -84,28 +84,28 @@ impl BracketPattern {
     /// `[ ~ term (~ , ~ term)* ~ ,? ~ ]`
     fn consume_many<'i, F, I, T, U>(&self, input: ParseState<'i>, ignore: I, parser: F) -> ParseResult<'i, BracketPair<'i, T>>
     where
-        F: Fn(ParseState<'i>) -> ParseResult<'i, T>,
-        I: Fn(ParseState<'i>) -> ParseResult<'i, U>,
+        F: FnMut(ParseState<'i>) -> ParseResult<'i, T> + Copy,
+        I: FnMut(ParseState<'i>) -> ParseResult<'i, U> + Copy,
     {
         let mut terms = Vec::with_capacity(1);
         let (state, lhs) = input.match_str(self.open)?;
-        let (state, first) = state.skip(&ignore).match_fn(&parser)?;
+        let (state, first) = state.skip(ignore).match_fn(parser)?;
         terms.push(first);
-        let (state, _) = state.match_repeats(|s| self.delimiter_term(s, &ignore, &parser, &mut terms))?;
+        let (state, _) = state.match_repeats(|s| self.delimiter_term(s, ignore, parser, &mut terms))?;
         let s_rhs = if self.one_tailing && terms.len() == 1 {
-            state.skip(&ignore).match_str(self.delimiter)?.0
+            state.skip(ignore).match_str(self.delimiter)?.0
         }
         else {
             match self.dangling {
-                Some(true) => state.skip(&ignore).match_str(self.delimiter)?.0,
+                Some(true) => state.skip(ignore).match_str(self.delimiter)?.0,
                 Some(false) => state,
-                None => match state.skip(&ignore).match_str(self.delimiter) {
+                None => match state.skip(ignore).match_str(self.delimiter) {
                     ParseResult::Pending(s, _) => s,
                     ParseResult::Stop(_) => state,
                 },
             }
         };
-        let (finally, rhs) = s_rhs.skip(&ignore).match_str(self.close)?;
+        let (finally, rhs) = s_rhs.skip(ignore).match_str(self.close)?;
         finally.finish(BracketPair {
             lhs: StringView::new(lhs, input.start_offset),
             rhs: StringView::new(rhs, s_rhs.start_offset),
@@ -121,11 +121,11 @@ impl BracketPattern {
         terms: &'t mut Vec<T>,
     ) -> ParseResult<'i, ()>
     where
-        F: Fn(ParseState<'i>) -> ParseResult<'i, T>,
-        I: Fn(ParseState<'i>) -> ParseResult<'i, U>,
+        F: FnMut(ParseState<'i>) -> ParseResult<'i, T> + Copy,
+        I: FnMut(ParseState<'i>) -> ParseResult<'i, U> + Copy,
     {
-        let (state, _) = input.skip(&ignore).match_str(self.delimiter)?;
-        let (state, term) = state.skip(&ignore).match_fn(parser)?;
+        let (state, _) = input.skip(ignore).match_str(self.delimiter)?;
+        let (state, term) = state.skip(ignore).match_fn(parser)?;
         terms.push(term);
         state.finish(())
     }

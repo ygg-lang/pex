@@ -18,36 +18,6 @@ pub mod bracket_pair;
 /// ```
 ///
 /// # Examples
-///
-/// - match `` `1234` ``
-///
-/// ```
-/// # use pex::{helpers::surround_pair, NamedPattern, ParseState, SurroundPattern};
-/// let quoted_str = SurroundPattern {
-///     lhs: NamedPattern::new('`', "STRING_LHS"),
-///     rhs: NamedPattern::new('`', "STRING_RHS"),
-/// };
-/// let test =
-///     surround_pair(ParseState::new(r#"`12{x}34`rest text"#), quoted_str).as_result().unwrap().1;
-/// assert_eq!(test.head.as_string(), "`");
-/// assert_eq!(test.body.as_string(), "12{x}34");
-/// assert_eq!(test.tail.as_string(), "`");
-/// ```
-///
-/// - match `"""1234"""`
-///
-/// ```
-/// # use pex::{helpers::surround_pair, NamedPattern, ParseState, SurroundPattern};
-/// let raw_str = SurroundPattern {
-///     lhs: NamedPattern::new("\"\"\"", "STRING_RAW_LHS"),
-///     rhs: NamedPattern::new("\"\"\"", "STRING_RAW_RHS"),
-/// };
-/// let test =
-///     surround_pair(ParseState::new(r#""""1234"""rest text"#), raw_str).as_result().unwrap().1;
-/// assert_eq!(test.head.as_string(), "\"\"\"");
-/// assert_eq!(test.body.as_string(), "1234");
-/// assert_eq!(test.tail.as_string(), "\"\"\"");
-/// ```
 #[derive(Copy, Clone, Debug)]
 pub struct NamedPattern<P> {
     /// The pattern to match
@@ -119,21 +89,6 @@ where
     }
 }
 /// A string view with range information from the raw string.
-///
-///
-/// # Examples
-///
-/// ```
-/// # use pex::{helpers::surround_pair, NamedPattern, ParseState, SurroundPattern};
-/// let quoted_str = SurroundPattern {
-///     lhs: NamedPattern::new('`', "STRING_LHS"),
-///     rhs: NamedPattern::new('`', "STRING_RHS"),
-/// };
-/// let test = surround_pair(ParseState::new(r#"`12{x}34`rest text"#), quoted_str).unwrap();
-/// assert_eq!(test.head.as_range(), 0..1);
-/// assert_eq!(test.body.as_string(), "12{x}34");
-/// assert_eq!(test.tail.as_range(), 8..9);
-/// ```
 #[derive(Copy, Clone, Debug)]
 pub struct StringView<'i> {
     start_offset: usize,

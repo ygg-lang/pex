@@ -44,9 +44,9 @@ impl<'i> ParseState<'i> {
     }
     /// Parsing a character with given rule.
     #[inline]
-    pub fn match_char_if<F>(self, predicate: F, message: &'static str) -> ParseResult<'i, char>
+    pub fn match_char_if<F>(self, mut predicate: F, message: &'static str) -> ParseResult<'i, char>
     where
-        F: Fn(char) -> bool,
+        F: FnMut(char) -> bool,
     {
         match self.get_character(0) {
             Some(c) if predicate(c) => self.advance(c).finish(c),
@@ -124,9 +124,9 @@ impl<'i> ParseState<'i> {
 
     /// Match a string with given conditional.
     #[inline]
-    pub fn match_str_if<F>(self, predicate: F, message: &'static str) -> ParseResult<'i, &'i str>
+    pub fn match_str_if<F>(self, mut predicate: F, message: &'static str) -> ParseResult<'i, &'i str>
     where
-        F: Fn(char) -> bool,
+        F: FnMut(char) -> bool,
     {
         let mut offset = 0;
         for char in self.residual.chars() {
@@ -142,9 +142,9 @@ impl<'i> ParseState<'i> {
     }
     /// Match a string with given conditional.
     #[inline]
-    pub fn match_str_until<F>(self, predicate: F, message: &'static str) -> ParseResult<'i, &'i str>
+    pub fn match_str_until<F>(self, mut predicate: F, message: &'static str) -> ParseResult<'i, &'i str>
     where
-        F: Fn(char) -> bool,
+        F: FnMut(char) -> bool,
     {
         self.match_str_if(|c| !predicate(c), message)
     }
@@ -153,9 +153,9 @@ impl<'i> ParseState<'i> {
 impl<'i> ParseState<'i> {
     /// Simple suffix call form
     #[inline]
-    pub fn match_fn<T, F>(self, parse: F) -> ParseResult<'i, T>
+    pub fn match_fn<T, F>(self, mut parse: F) -> ParseResult<'i, T>
     where
-        F: Fn(ParseState<'i>) -> ParseResult<T>,
+        F: FnMut(ParseState<'i>) -> ParseResult<T>,
     {
         parse(self)
     }
@@ -165,9 +165,9 @@ impl<'i> ParseState<'i> {
     /// p+ <=> p p*
     /// ```
     #[inline]
-    pub fn match_repeats<T, F>(self, parse: F) -> ParseResult<'i, Vec<T>>
+    pub fn match_repeats<T, F>(self, mut parse: F) -> ParseResult<'i, Vec<T>>
     where
-        F: Fn(ParseState<'i>) -> ParseResult<T>,
+        F: FnMut(ParseState<'i>) -> ParseResult<T>,
     {
         let mut result = Vec::new();
         let mut state = self;
@@ -190,9 +190,9 @@ impl<'i> ParseState<'i> {
     /// p{min, max}
     /// ```
     #[inline]
-    pub fn match_repeat_m_n<T, F>(self, min: usize, max: usize, parse: F) -> ParseResult<'i, Vec<T>>
+    pub fn match_repeat_m_n<T, F>(self, min: usize, max: usize, mut parse: F) -> ParseResult<'i, Vec<T>>
     where
-        F: Fn(ParseState<'i>) -> ParseResult<T>,
+        F: FnMut(ParseState<'i>) -> ParseResult<T>,
     {
         let mut result = Vec::new();
         let mut count = 0;
@@ -221,9 +221,9 @@ impl<'i> ParseState<'i> {
     /// p?
     /// ```
     #[inline]
-    pub fn match_optional<T, F>(self, parse: F) -> ParseResult<'i, Option<T>>
+    pub fn match_optional<T, F>(self, mut parse: F) -> ParseResult<'i, Option<T>>
     where
-        F: Fn(ParseState<'i>) -> ParseResult<T>,
+        F: FnMut(ParseState<'i>) -> ParseResult<T>,
     {
         match parse(self.clone()) {
             Pending(state, value) => state.finish(Some(value)),
@@ -232,9 +232,9 @@ impl<'i> ParseState<'i> {
     }
     /// Match but does not return the result
     #[inline]
-    pub fn skip<F, T>(self, parse: F) -> ParseState<'i>
+    pub fn skip<F, T>(self, mut parse: F) -> ParseState<'i>
     where
-        F: Fn(ParseState<'i>) -> ParseResult<T>,
+        F: FnMut(ParseState<'i>) -> ParseResult<T>,
     {
         match parse(self.clone()) {
             Pending(new, _) => new,
@@ -250,9 +250,9 @@ impl<'i> ParseState<'i> {
     /// p &after
     /// ```
     #[inline]
-    pub fn match_positive<F, T>(self, parse: F, message: &'static str) -> ParseResult<'i, ()>
+    pub fn match_positive<F, T>(self, mut parse: F, message: &'static str) -> ParseResult<'i, ()>
     where
-        F: Fn(ParseState<'i>) -> ParseResult<T>,
+        F: FnMut(ParseState<'i>) -> ParseResult<T>,
     {
         match parse(self.clone()) {
             Pending(..) => self.finish(()),
@@ -265,9 +265,9 @@ impl<'i> ParseState<'i> {
     /// p !after
     /// ```
     #[inline]
-    pub fn match_negative<F, T>(self, parse: F, message: &'static str) -> ParseResult<'i, ()>
+    pub fn match_negative<F, T>(self, mut parse: F, message: &'static str) -> ParseResult<'i, ()>
     where
-        F: Fn(ParseState<'i>) -> ParseResult<T>,
+        F: FnMut(ParseState<'i>) -> ParseResult<T>,
     {
         match parse(self.clone()) {
             Pending(..) => Stop(StopBecause::ShouldNotBe { message, position: self.start_offset }),
